@@ -108,11 +108,9 @@ export const getSession = async () => {
   return session;
 };
 
-// Make supabase available globally for debugging (remove in production)
-if (typeof window !== 'undefined') {
+// Make supabase available globally for debugging in development only
+if (import.meta.env.DEV && typeof window !== 'undefined') {
   (window as any).debugSupabase = supabase;
   (window as any).testConnection = testSupabaseConnection;
-  if (import.meta.env.DEV) {
-    console.log('🐛 Debug: window.debugSupabase and window.testConnection available');
-  }
+  console.log('🐛 Debug: window.debugSupabase and window.testConnection available');
 }

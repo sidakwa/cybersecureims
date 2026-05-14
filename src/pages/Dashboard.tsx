@@ -80,13 +80,19 @@ export default function Dashboard() {
       const exceptions = [];
       if (implementedControls > 0 && evidence.length === 0) exceptions.push(`${implementedControls} critical controls have no evidence`);
 
-      const overdueFindings = findings.filter(f => f.due_date && new Date(f.due_date) < today && f.finding_status NOT IN ('Closed', 'Resolved')).length;
+      const overdueFindings = findings.filter(
+            f =>
+            f.due_date &&
+            new Date(f.due_date) < today &&
+            f.finding_status !== 'Closed' &&
+            f.finding_status !== 'Resolved'
+      ).length;
       if (overdueFindings > 0) exceptions.push(`${overdueFindings} audit findings overdue`);
 
       const criticalRisks = risks.filter(r => (r.risk_score || 0) >= 20).length;
       if (criticalRisks > 0) exceptions.push(`${criticalRisks} critical risks require attention`);
 
-      const findingsClosed = findings.filter(f => f.finding_status = 'Closed').length;
+      const findingsClosed = findings.filter(f => f.finding_status === 'Closed').length;
       const closureRate = findings.length > 0 ? Math.round((findingsClosed / findings.length) * 100) : 0;
 
       setData({

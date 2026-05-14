@@ -24,18 +24,21 @@ export function useVulnerabilities() {
   useEffect(() => { fetchVulnerabilities(); }, [organizationId]);
 
   const addVulnerability = async (v: Partial<Vulnerability>) => {
+    if (!organizationId) throw new Error('No organization context');
     const { error } = await supabase.from('vulnerabilities').insert({ ...v, organization_id: organizationId });
     if (!error) await fetchVulnerabilities();
     return !error;
   };
 
   const updateVulnerability = async (id: string, updates: Partial<Vulnerability>) => {
+    if (!organizationId) throw new Error('No organization context');
     const { error } = await supabase.from('vulnerabilities').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id).eq('organization_id', organizationId);
     if (!error) await fetchVulnerabilities();
     return !error;
   };
 
   const deleteVulnerability = async (id: string) => {
+    if (!organizationId) throw new Error('No organization context');
     const { error } = await supabase.from('vulnerabilities').delete().eq('id', id).eq('organization_id', organizationId);
     if (!error) await fetchVulnerabilities();
     return !error;

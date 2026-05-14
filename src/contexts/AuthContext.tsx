@@ -20,6 +20,7 @@ type AuthContextType = {
   user: User | null;
   profile: Profile | null;
   organization: Organization | null;
+  organizationId: string | null;
   role: string;
   isAdmin: boolean;
   loading: boolean;
@@ -147,7 +148,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   console.log('📊 Auth state - loading:', loading, 'user:', user?.email, 'role:', role);
 
   return (
-    <AuthContext.Provider value={{ user, profile, organization, role, isAdmin, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        organization,
+        organizationId: profile?.organization_id ?? null,
+        role,
+        isAdmin,
+        loading,
+        signOut,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

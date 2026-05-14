@@ -50,7 +50,7 @@ export function SLABreachesCard() {
   if (loading || breaches.length === 0) return null;
 
   return (
-    <Card className="border-red-200 bg-red-50">
+    <Card className="border-l-4 border-l-red-500 bg-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-red-700">
           <AlertCircle className="h-5 w-5" />
@@ -67,7 +67,7 @@ export function SLABreachesCard() {
               </div>
               <Badge className={
                 breach.escalation_level >= 3 ? 'bg-purple-500' :
-                breach.escalation_level >= 2 ? 'bg-red-500' : 'bg-yellow-500'
+                breach.escalation_level >= 2 ? 'bg-white0' : 'bg-yellow-500'
               }>
                 Level {breach.escalation_level}
               </Badge>

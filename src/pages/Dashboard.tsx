@@ -5,38 +5,31 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Loader2, TrendingUp, AlertCircle, CheckCircle, Target, Zap, Shield } from 'lucide-react';
 import { RiskCoverageCard } from '../components/RiskCoverageCard';
 import { SLABreachesCard } from '../components/SLABreachesCard';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user, profile, organization } = useAuth();
+  const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
 
-  // Use profile.organization_id directly instead of waiting for organization object
   const organizationId = profile?.organization_id;
-
-  console.log('Dashboard - user:', user?.email, 'profile:', profile?.role, 'orgId:', organizationId);
 
   useEffect(() => {
     if (organizationId) {
-      console.log('Dashboard - fetching data for orgId:', organizationId);
       fetchData();
-    } else if (profile) {
-      console.log('Dashboard - has profile but no orgId, setting loading false');
-      setLoading(false);
     } else {
-      console.log('Dashboard - waiting for profile...');
+      setLoading(false);
     }
-  }, [organizationId, profile]);
+  }, [organizationId]);
 
   const fetchData = async () => {
     if (!organizationId) return;
 
     try {
-      console.log('Dashboard - starting data fetch...');
       const [risksRes, controlsRes, findingsRes, evidenceRes, wpsRes, mappingsRes] = await Promise.all([
         supabase.from('cyber_risks').select('risk_score, status, id'),
         supabase.from('uci_controls').select('uci_status'),
@@ -53,7 +46,6 @@ export default function Dashboard() {
       const wps = wpsRes.data || [];
       const mappings = mappingsRes.data || [];
 
-      // Calculate metrics
       const totalRisks = risks.length;
       const mappedRiskIds = new Set(mappings.map(m => m.risk_id));
       const mappedRisks = mappedRiskIds.size;
@@ -115,9 +107,8 @@ export default function Dashboard() {
         totalControls: controls.length,
         fresh: evidence.length - expiringSoon - expired,
       });
-      console.log('Dashboard - data loaded successfully');
     } catch (error) {
-      console.error('Dashboard fetch error:', error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -135,10 +126,25 @@ export default function Dashboard() {
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       <PageHeader title="Executive Dashboard" description="Strategic security intelligence & decision support" icon={<LayoutDashboard className="h-6 w-6" />} />
 
+      {/* Executive Exceptions - White card with yellow border */}
       {data?.exceptions && data.exceptions.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader><CardTitle className="flex items-center gap-2 text-red-700"><AlertCircle className="h-5 w-5" /> Executive Exceptions</CardTitle></CardHeader>
-          <CardContent><ul className="space-y-2">{data.exceptions.map((ex: string, i: number) => (<li key={i} className="flex items-center gap-2 text-red-800"><AlertCircle className="h-4 w-4" />{ex}</li>))}</ul></CardContent>
+        <Card className="border-l-4 border-l-yellow-500 bg-white shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-gray-800">
+              <AlertCircle className="h-5 w-5 text-yellow-500" />
+              Executive Exceptions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {data.exceptions.map((ex: string, i: number) => (
+                <li key={i} className="flex items-center gap-2 text-gray-700">
+                  <AlertCircle className="h-4 w-4 text-yellow-500" />
+                  {ex}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
         </Card>
       )}
 

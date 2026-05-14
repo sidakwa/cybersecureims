@@ -24,7 +24,7 @@ export default function RoleManagement() {
     const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const currentOrgId = organization?.id || profile?.organization_id;
+    const currentOrgId = organizationId;
 
     useEffect(() => {
         if (isAdmin && currentOrgId) {

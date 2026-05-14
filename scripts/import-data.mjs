@@ -9,13 +9,13 @@ const __dirname = path.dirname(__filename);
 
 // Supabase configuration
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase credentials');
   console.error('Please set:');
   console.error('  export VITE_SUPABASE_URL="your-url"');
-  console.error('  export VITE_SUPABASE_SERVICE_ROLE_KEY="your-key"');
+  console.error('  export SUPABASE_SERVICE_ROLE_KEY="your-key"');
   process.exit(1);
 }
 

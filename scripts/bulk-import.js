@@ -5,10 +5,10 @@ const path = require('path');
 
 // Configuration
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Please set VITE_SUPABASE_URL and VITE_SUPABASE_SERVICE_ROLE_KEY');
+  console.error('Please set VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
   process.exit(1);
 }
 

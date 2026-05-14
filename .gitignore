@@ -62,3 +62,4 @@ public/workbox-*.js
 .env.production
 .env.development
 *.zip
+*.backup*

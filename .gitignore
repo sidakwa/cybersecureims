@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+dist/
+dev-dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+build/
+coverage/
+
+# Editor & OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Temporary / Backup files
+*.bak
+*.backup
+*.new
+*.tmp
+*.patch
+
+# Supabase
+supabase/.env
+supabase/config.toml
+
+# Misc
+package.json.backup
+
+# Mock data and test files
+src/__mocks__/
+*.mock.ts
+*.mock.tsx
+
+# Service role keys (never commit)
+*SERVICE_ROLE_KEY*
+*service_role*
+*.key
+*.pem
+# Leftover build / Next.js artifacts
+src/app/
+*.new
+# PWA / Build artifacts
+dev-dist/
+public/sw.js
+public/workbox-*.js
+.env
+.env.local
+.env.production
+.env.development
+*.zip

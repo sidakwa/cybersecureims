@@ -1,0 +1,362 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SEACOM Corporate Colors */
+:root {
+  --seacom-blue: #0057B8;
+  --seacom-cyan: #00D9FF;
+  --seacom-navy: #0D2240;
+  --seacom-red: #D7263D;
+  --seacom-orange: #F4811F;
+  --seacom-amber: #F5A623;
+}
+
+/* Base styles */
+body {
+  background-color: #FFFFFF;
+  color: #0D2240;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* SEACOM Custom Components */
+.seacom-header {
+  background: linear-gradient(135deg, #0057B8 0%, #003D82 100%);
+  border-bottom: 3px solid #00D9FF;
+}
+
+.seacom-card {
+  background-color: #F5F7FA;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.seacom-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.seacom-btn-primary {
+  background-color: #0057B8;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.seacom-btn-primary:hover {
+  background-color: #003D82;
+}
+
+.badge-critical {
+  background-color: #D7263D;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-high {
+  background-color: #F4811F;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-medium {
+  background-color: #F5A623;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-low {
+  background-color: #10B981;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.seacom-table th {
+  background-color: #0057B8;
+  color: white;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.seacom-table tr {
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.seacom-table tr:hover {
+  background-color: #E8F1FB;
+}
+
+/* SEACOM Theme Overrides for shadcn/ui */
+.bg-background {
+  background-color: #FFFFFF !important;
+}
+
+.text-foreground {
+  color: #0D2240 !important;
+}
+
+.border-border {
+  border-color: #E5E7EB !important;
+}
+
+/* Dropdown menu improvements */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+.radix-select-content {
+  background-color: white !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.radix-select-item {
+  color: #0D2240 !important;
+  padding: 0.5rem 1rem !important;
+  cursor: pointer !important;
+}
+
+.radix-select-item:hover {
+  background-color: #F3F4F6 !important;
+}
+
+.radix-select-item[data-highlighted] {
+  background-color: #E5E7EB !important;
+  color: #0057B8 !important;
+}
+
+/* Input focus states */
+input:focus, textarea:focus, select:focus {
+  border-color: #0057B8 !important;
+  ring-color: #0057B8 !important;
+  outline: none !important;
+}
+
+/* Button hover states */
+.btn-primary {
+  background-color: #0057B8 !important;
+  color: white !important;
+}
+
+.btn-primary:hover {
+  background-color: #003D82 !important;
+}
+
+.btn-outline {
+  border-color: #E5E7EB !important;
+  color: #0D2240 !important;
+}
+
+.btn-outline:hover {
+  background-color: #F3F4F6 !important;
+}
+
+/* Table styling */
+table th {
+  background-color: #F9FAFB !important;
+  color: #0D2240 !important;
+  font-weight: 600 !important;
+}
+
+table td {
+  color: #0D2240 !important;
+  border-bottom-color: #E5E7EB !important;
+}
+
+table tr:hover td {
+  background-color: #F9FAFB !important;
+}
+
+/* ============================================
+   GLOBAL DROPDOWN & SELECT STYLES
+   ============================================ */
+
+/* Select / Dropdown trigger styling */
+select,
+[role="combobox"],
+[data-state="closed"] {
+  background-color: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  color: #1a202c !important;
+}
+
+/* Dropdown content / menu */
+[role="listbox"],
+[data-radix-popper-content-wrapper] > div,
+.radix-select-content {
+  background-color: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden !important;
+  z-index: 50 !important;
+}
+
+/* Dropdown items */
+[role="option"],
+[data-radix-select-item],
+.radix-select-item {
+  padding: 0.5rem 1rem !important;
+  cursor: pointer !important;
+  font-size: 0.875rem !important;
+  color: #1a202c !important;
+  transition: background-color 0.2s ease !important;
+}
+
+/* Dropdown item hover */
+[role="option"]:hover,
+[data-radix-select-item]:hover,
+.radix-select-item:hover {
+  background-color: #f3f4f6 !important;
+}
+
+/* Selected dropdown item */
+[data-state="checked"],
+[data-highlighted],
+[aria-selected="true"] {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  font-weight: 500 !important;
+}
+
+/* Input fields - consistent styling */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  background-color: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  color: #1a202c !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Input focus states */
+input:focus:not([type="checkbox"]):not([type="radio"]),
+textarea:focus,
+select:focus,
+[role="combobox"]:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  ring: 2px solid #3b82f6 !important;
+}
+
+/* Disabled input styling */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background-color: #f9fafb !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+/* Form labels */
+label {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  margin-bottom: 0.25rem !important;
+  display: block !important;
+}
+
+/* Card styling for consistency */
+.card,
+[class*="Card"] {
+  border-radius: 0.75rem !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Button consistency */
+button {
+  transition: all 0.2s ease !important;
+}
+
+/* Modal/Dialog content styling */
+[role="dialog"],
+[data-radix-dialog-content] {
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Table styling */
+table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+th {
+  font-weight: 600 !important;
+  color: #374151 !important;
+  font-size: 0.875rem !important;
+}
+
+td {
+  font-size: 0.875rem !important;
+  color: #4b5563 !important;
+}
+
+/* Badge styling */
+[class*="Badge"] {
+  font-weight: 500 !important;
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.5rem !important;
+  border-radius: 9999px !important;
+}
+
+/* Progress bar styling */
+[class*="Progress"] {
+  background-color: #e5e7eb !important;
+  border-radius: 9999px !important;
+  overflow: hidden !important;
+}
+
+[class*="Progress"] > div {
+  transition: width 0.3s ease !important;
+}
+
+/* Scrollbar styling for modals */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents zoom on mobile */
+  }
+}

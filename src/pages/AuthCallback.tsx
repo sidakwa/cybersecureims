@@ -11,7 +11,9 @@ export default function AuthCallback() {
     const handleCallback = async () => {
       try {
         setStatus('Testing Supabase connection...');
-        console.log('AuthCallback: Testing connection');
+        if (import.meta.env.DEV) {
+          console.log('AuthCallback: Testing connection');
+        }
         
         // Test connection first
         const isConnected = await testSupabaseConnection();
@@ -22,7 +24,9 @@ export default function AuthCallback() {
         }
         
         setStatus('Getting session...');
-        console.log('AuthCallback: Getting session');
+        if (import.meta.env.DEV) {
+          console.log('AuthCallback: Getting session');
+        }
         
         // Get the session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -35,7 +39,9 @@ export default function AuthCallback() {
         }
         
         if (session) {
-          console.log('AuthCallback: Success for', session.user.email);
+          if (import.meta.env.DEV) {
+            console.log('AuthCallback: Success for', session.user.email);
+          }
           setStatus(`Welcome ${session.user.email}! Redirecting...`);
           
           // Small delay to ensure session is properly set

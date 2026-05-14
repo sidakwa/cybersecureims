@@ -3,9 +3,17 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ejxrhfqkhrhcqyjhtqpg.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-console.log('🔧 Supabase URL:', supabaseUrl);
-console.log('🔧 Environment:', import.meta.env.MODE);
-console.log('🔧 Anon key present:', !!supabaseAnonKey);
+if (import.meta.env.DEV) {
+
+  console.log('🔧 Supabase URL:', supabaseUrl);
+
+}
+if (import.meta.env.DEV) {
+  console.log('🔧 Environment:', import.meta.env.MODE);
+}
+if (import.meta.env.DEV) {
+  console.log('🔧 Anon key present:', !!supabaseAnonKey);
+}
 
 // Create client with more verbose logging
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -24,13 +32,17 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // Add a test function to verify connection
 export const testSupabaseConnection = async () => {
   try {
-    console.log('🔍 Testing Supabase connection...');
+    if (import.meta.env.DEV) {
+      console.log('🔍 Testing Supabase connection...');
+    }
     const { data, error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
     if (error) {
       console.error('❌ Connection test failed:', error);
       return false;
     }
-    console.log('✅ Connection test successful');
+    if (import.meta.env.DEV) {
+      console.log('✅ Connection test successful');
+    }
     return true;
   } catch (err) {
     console.error('💥 Connection test exception:', err);
@@ -44,7 +56,9 @@ export const isDemoMode = !supabaseUrl || !supabaseAnonKey;
 export const signInWithAzure = async () => {
   try {
     const redirectTo = `${window.location.origin}/auth/callback`;
-    console.log('Azure SSO redirect to:', redirectTo);
+    if (import.meta.env.DEV) {
+      console.log('Azure SSO redirect to:', redirectTo);
+    }
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'azure',
@@ -60,7 +74,11 @@ export const signInWithAzure = async () => {
       throw error;
     }
     
-    console.log('Azure SSO initiated');
+    if (import.meta.env.DEV) {
+    
+      console.log('Azure SSO initiated');
+    
+    }
     return data;
   } catch (error) {
     console.error('Azure SSO exception:', error);
@@ -94,5 +112,7 @@ export const getSession = async () => {
 if (typeof window !== 'undefined') {
   (window as any).debugSupabase = supabase;
   (window as any).testConnection = testSupabaseConnection;
-  console.log('🐛 Debug: window.debugSupabase and window.testConnection available');
+  if (import.meta.env.DEV) {
+    console.log('🐛 Debug: window.debugSupabase and window.testConnection available');
+  }
 }

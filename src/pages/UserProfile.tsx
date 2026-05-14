@@ -8,7 +8,11 @@ export default function UserProfile() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
-  console.log('UserProfile - role:', role, 'isAdmin:', isAdmin, 'org:', organization);
+  if (import.meta.env.DEV) {
+
+    console.log('UserProfile - role:', role, 'isAdmin:', isAdmin, 'org:', organization);
+
+  }
 
   useEffect(() => {
     if (profile) {

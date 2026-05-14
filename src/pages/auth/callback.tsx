@@ -19,7 +19,9 @@ export default function AuthCallback() {
         }
         
         if (session) {
-          console.log('Auth callback successful:', session.user.email);
+          if (import.meta.env.DEV) {
+            console.log('Auth callback successful:', session.user.email);
+          }
           // Redirect to dashboard on success
           navigate('/dashboard');
         } else {

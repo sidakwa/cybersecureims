@@ -36,7 +36,9 @@ export default function RoleManagement() {
 
     const fetchUsers = async () => {
         if (!currentOrgId) {
-            console.log('No organization ID available');
+            if (import.meta.env.DEV) {
+              console.log('No organization ID available');
+            }
             setLoading(false);
             return;
         }
@@ -45,7 +47,9 @@ export default function RoleManagement() {
         setError(null);
         
         try {
-            console.log('Fetching users for org:', currentOrgId);
+            if (import.meta.env.DEV) {
+              console.log('Fetching users for org:', currentOrgId);
+            }
             
             // First, get all profiles for this organization
             const { data: profiles, error: profileError } = await supabase
@@ -59,10 +63,16 @@ export default function RoleManagement() {
                 throw profileError;
             }
 
-            console.log('Profiles found:', profiles?.length || 0);
+            if (import.meta.env.DEV) {
+
+              console.log('Profiles found:', profiles?.length || 0);
+
+            }
 
             if (!profiles || profiles.length === 0) {
-                console.log('No profiles found for organization');
+                if (import.meta.env.DEV) {
+                  console.log('No profiles found for organization');
+                }
                 setUsers([]);
                 setLoading(false);
                 return;

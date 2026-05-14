@@ -39,7 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Non-blocking profile fetch - runs in background
   const fetchProfileInBackground = async (userId: string) => {
     try {
-      console.log('🔍 Background fetch for profile:', userId);
+      if (import.meta.env.DEV) {
+        console.log('🔍 Background fetch for profile:', userId);
+      }
       
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -57,7 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      console.log('✅ Profile loaded in background:', profileData.role);
+      if (import.meta.env.DEV) {
+        console.log('✅ Profile loaded in background:', profileData.role);
+      }
       setProfile(profileData);
       
       // Fetch organization if exists
@@ -69,7 +73,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .maybeSingle();
         
         if (!orgError && org) {
-          console.log('✅ Organization loaded:', org.name);
+          if (import.meta.env.DEV) {
+        console.log('✅ Organization loaded:', org.name);
+      }
           setOrganization(org);
         }
       }
@@ -83,10 +89,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const initAuth = async () => {
       try {
+        if (import.meta.env.DEV) {
         console.log('🚀 Initializing AuthProvider...');
+      }
         const { data: { session } } = await supabase.auth.getSession();
         
+        if (import.meta.env.DEV) {
         console.log('📊 Session user:', session?.user?.email || 'none');
+      }
         
         if (isMounted) {
           setUser(session?.user ?? null);
@@ -108,7 +118,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🔄 Auth event:', event);
+      if (import.meta.env.DEV) {
+        console.log('🔄 Auth event:', event);
+      }
       if (isMounted) {
         setUser(session?.user ?? null);
         setLoading(false);
@@ -145,7 +157,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const role = profile?.role || 'viewer';
   const isAdmin = role === 'admin';
 
-  console.log('📊 Auth state - loading:', loading, 'user:', user?.email, 'role:', role);
+  if (import.meta.env.DEV) {
+        console.log('📊 Auth state - loading:', loading, 'user:', user?.email, 'role:', role);
+      }
 
   return (
     <AuthContext.Provider

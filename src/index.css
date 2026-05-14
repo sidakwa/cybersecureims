@@ -21,7 +21,7 @@ body {
 
 /* SEACOM Custom Components */
 .seacom-header {
-  background: linear-gradient(135deg, #0057B8 0%, #003D82 100%);
+  background: white;
   border-bottom: 3px solid #00D9FF;
 }
 

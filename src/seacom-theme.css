@@ -1,0 +1,86 @@
+:root {
+  --seacom-blue: #0057B8;
+  --seacom-blue-dark: #003F8A;
+  --seacom-cyan: #00D9FF;
+  --seacom-navy: #0D2240;
+}
+
+.seacom-navbar {
+  background-color: white !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.seacom-logo {
+  color: #0D2240 !important;
+}
+
+.seacom-nav-link {
+  color: #374151 !important;
+  font-weight: 500;
+}
+
+.seacom-nav-link:hover {
+  color: #0057B8 !important;
+  background-color: #EBF3FF !important;
+}
+
+.seacom-nav-link-active {
+  color: #0057B8 !important;
+  background-color: #EBF3FF !important;
+  font-weight: 600;
+}
+
+.seacom-dropdown {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.seacom-dropdown-item {
+  color: #374151 !important;
+  transition: all 0.2s ease;
+}
+
+.seacom-dropdown-item:hover {
+  background-color: #EBF3FF !important;
+  color: #0057B8 !important;
+}
+
+.seacom-badge-cyan {
+  background: #00D9FF;
+  color: #003F8A !important;
+}
+
+.seacom-badge-blue {
+  background: #0057B8;
+  color: white !important;
+}
+
+.seacom-button-primary {
+  background-color: #0057B8;
+  color: white !important;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.seacom-button-primary:hover {
+  background-color: #003F8A;
+}
+
+.seacom-button-secondary {
+  background-color: transparent;
+  color: #0057B8 !important;
+  border: 1px solid #0057B8;
+}
+
+.seacom-button-secondary:hover {
+  background-color: #EBF3FF;
+}
+
+.bg-seacom-active {
+  background-color: #EBF3FF !important;
+}
+.text-seacom-link {
+  color: #0057B8 !important;
+}

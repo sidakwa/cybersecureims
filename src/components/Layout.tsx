@@ -56,7 +56,7 @@ function CustomDropdown({ trigger, children }: { trigger: React.ReactNode; child
         {trigger}
       </div>
       {isOpen && (
-        <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+        <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-lg z-50 seacom-dropdown">
           {children}
         </div>
       )}
@@ -74,7 +74,7 @@ function DropdownItem({ icon, label, path, onClick }: { icon: React.ReactNode; l
       to={path}
       onClick={onClick}
       className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
-        isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
+        isActive ? 'bg-seacom-active text-seacom-link seacom-nav-link-active' : 'text-gray-700 hover:bg-gray-50 seacom-nav-link'
       }`}
     >
       {icon}
@@ -280,7 +280,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 fixed top-0 w-full z-50 shadow-sm">
+      <nav className="bg-white seacom-header border-b border-gray-200 fixed top-0 w-full z-50 shadow-sm">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             {/* Logo */}
@@ -293,7 +293,7 @@ export default function Layout() {
               </button>
               <Link to="/dashboard" className="flex items-center gap-2">
                 <Shield className="h-8 w-8 text-blue-600" />
-                <span className="font-bold text-xl text-gray-900">CyberSecureIMS</span>
+                <span className="font-bold text-xl text-gray-900 seacom-logo">CyberSecureIMS</span>
               </Link>
             </div>
 

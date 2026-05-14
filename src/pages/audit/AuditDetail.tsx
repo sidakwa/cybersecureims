@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '../../contexts/AuthContext';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, ArrowLeft, FileText, AlertTriangle, Link2, CheckCircle, Calendar, Server } from 'lucide-react';
-
-const ORG_ID = "` + organizationId + `";
+import { Loader2, ArrowLeft, FileText } from 'lucide-react';
 
 export default function AuditDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { profile, loading: authLoading } = useAuth();
+
+  const organizationId = profile?.organization_id;
+
   const [audit, setAudit] = useState<any>(null);
   const [findings, setFindings] = useState<any[]>([]);
   const [evidence, setEvidence] = useState<any[]>([]);
@@ -19,48 +22,55 @@ export default function AuditDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) {
+    if (!authLoading && id && organizationId) {
       fetchAuditData();
     }
-  }, [id]);
+
+    if (!authLoading && !organizationId) {
+      setLoading(false);
+    }
+  }, [id, organizationId, authLoading]);
 
   const fetchAuditData = async () => {
     try {
       setLoading(true);
-      
-      // Fetch audit details
-      const { data: auditData } = await supabase
+
+      const { data: auditData, error: auditError } = await supabase
         .from('audit_engagements')
         .select('*')
         .eq('id', id)
+        .eq('organization_id', organizationId)
         .single();
-      
+
+      if (auditError) throw auditError;
       setAudit(auditData);
-      
-      // Fetch findings
-      const { data: findingsData } = await supabase
+
+      const { data: findingsData, error: findingsError } = await supabase
         .from('audit_findings')
         .select('*')
-        .eq('audit_id', id);
-      
+        .eq('audit_id', id)
+        .eq('organization_id', organizationId);
+
+      if (findingsError) throw findingsError;
       setFindings(findingsData || []);
-      
-      // Fetch evidence
-      const { data: evidenceData } = await supabase
+
+      const { data: evidenceData, error: evidenceError } = await supabase
         .from('audit_evidence')
         .select('*')
-        .eq('audit_id', id);
-      
+        .eq('audit_id', id)
+        .eq('organization_id', organizationId);
+
+      if (evidenceError) throw evidenceError;
       setEvidence(evidenceData || []);
-      
-      // Fetch actions
-      const { data: actionsData } = await supabase
+
+      const { data: actionsData, error: actionsError } = await supabase
         .from('audit_actions')
         .select('*, audit_findings(finding_title)')
-        .eq('audit_id', id);
-      
+        .eq('audit_id', id)
+        .eq('organization_id', organizationId);
+
+      if (actionsError) throw actionsError;
       setActions(actionsData || []);
-      
     } catch (error) {
       console.error('Error fetching audit data:', error);
     } finally {
@@ -70,35 +80,72 @@ export default function AuditDetail() {
 
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
-      case 'Critical': return <Badge className="bg-red-500">Critical</Badge>;
-      case 'High': return <Badge className="bg-orange-500">High</Badge>;
-      case 'Medium': return <Badge className="bg-yellow-500">Medium</Badge>;
-      default: return <Badge className="bg-blue-500">Low</Badge>;
+      case 'Critical':
+        return <Badge className="bg-red-500">Critical</Badge>;
+      case 'High':
+        return <Badge className="bg-orange-500">High</Badge>;
+      case 'Medium':
+        return <Badge className="bg-yellow-500">Medium</Badge>;
+      default:
+        return <Badge className="bg-blue-500">Low</Badge>;
     }
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-96"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  if (loading || authLoading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!organizationId) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardContent className="pt-6 text-center text-gray-500">
+            No organization context found.
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!audit) {
+    return (
+      <div className="p-6">
+        <Button variant="ghost" onClick={() => navigate('/audits/portfolio')} className="mb-4">
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Audits
+        </Button>
+        <Card>
+          <CardContent className="pt-6 text-center text-gray-500">
+            Audit not found.
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
     <div className="p-6 space-y-6">
-      <Button variant="ghost" onClick={() => navigate('/audits')} className="mb-4">
+      <Button variant="ghost" onClick={() => navigate('/audits/portfolio')} className="mb-4">
         <ArrowLeft className="h-4 w-4 mr-2" /> Back to Audits
       </Button>
-      
+
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-2xl font-bold">{audit?.title}</h1>
-            <p className="text-gray-500 mt-1">{audit?.audit_ref} | {audit?.standard}</p>
+            <p className="text-gray-500 mt-1">
+              {audit?.audit_ref} | {audit?.standard}
+            </p>
           </div>
           <Badge className={audit?.status === 'Completed' ? 'bg-green-500' : 'bg-blue-500'}>
             {audit?.status}
           </Badge>
         </div>
       </div>
-      
+
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -107,7 +154,7 @@ export default function AuditDetail() {
           <TabsTrigger value="actions">Actions ({actions.length})</TabsTrigger>
           <TabsTrigger value="systems">Systems Tested</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview">
           <Card>
             <CardContent className="pt-6">
@@ -118,12 +165,15 @@ export default function AuditDetail() {
                 <div><span className="text-gray-500">Framework:</span> {audit?.standard}</div>
               </div>
               {audit?.scope && (
-                <div className="mt-4"><span className="text-gray-500">Scope:</span><p className="mt-1">{audit.scope}</p></div>
+                <div className="mt-4">
+                  <span className="text-gray-500">Scope:</span>
+                  <p className="mt-1">{audit.scope}</p>
+                </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="findings">
           <Card>
             <CardContent className="pt-6">
@@ -141,8 +191,8 @@ export default function AuditDetail() {
                         {getSeverityBadge(finding.severity)}
                       </div>
                       <div className="mt-3 text-sm">
-                        <span className="text-gray-500">Owner:</span> {finding.owner} | 
-                        <span className="text-gray-500 ml-2">Due:</span> {finding.due_date}
+                        <span className="text-gray-500">Owner:</span> {finding.owner} |
+                        <span className="text-gray-500 ml-2"> Due:</span> {finding.due_date}
                       </div>
                     </div>
                   ))}
@@ -151,7 +201,7 @@ export default function AuditDetail() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="evidence">
           <Card>
             <CardContent className="pt-6">
@@ -180,7 +230,7 @@ export default function AuditDetail() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="actions">
           <Card>
             <CardContent className="pt-6">
@@ -198,8 +248,8 @@ export default function AuditDetail() {
                       </div>
                       <p className="text-sm text-gray-600 mt-1">{action.action_description}</p>
                       <div className="mt-2 text-sm">
-                        <span className="text-gray-500">Assigned to:</span> {action.assigned_to} | 
-                        <span className="text-gray-500 ml-2">Due:</span> {action.due_date}
+                        <span className="text-gray-500">Assigned to:</span> {action.assigned_to} |
+                        <span className="text-gray-500 ml-2"> Due:</span> {action.due_date}
                       </div>
                     </div>
                   ))}
@@ -208,11 +258,13 @@ export default function AuditDetail() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="systems">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center py-8 text-gray-500">Systems tested will appear here based on the audit scope</div>
+              <div className="text-center py-8 text-gray-500">
+                Systems tested will appear here based on the audit scope
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

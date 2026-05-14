@@ -17,27 +17,35 @@ export default function UCIControls() {
 
   const organizationId = profile?.organization_id;
 
-  console.log('UCIControls - organizationId:', organizationId, 'authLoading:', authLoading);
+  if (import.meta.env.DEV) {
+    console.log('UCIControls - organizationId:', organizationId, 'authLoading:', authLoading);
+  }
 
   useEffect(() => {
     if (authLoading) return;
     if (organizationId) {
       fetchControls();
     } else {
+      if (import.meta.env.DEV) {
       console.log('No organizationId, setting loading false');
+    }
       setLoading(false);
     }
   }, [organizationId, authLoading]);
 
   const fetchControls = async () => {
     if (!organizationId) {
+      if (import.meta.env.DEV) {
       console.log('No organizationId, skipping fetch');
+    }
       return;
     }
     try {
       setLoading(true);
       setError(null);
+      if (import.meta.env.DEV) {
       console.log('Fetching UCI controls for org:', organizationId);
+    }
       
       const { data, error } = await supabase
         .from('uci_controls')
@@ -51,7 +59,11 @@ export default function UCIControls() {
         throw error;
       }
       
-      console.log('Fetched controls count:', data?.length);
+      if (import.meta.env.DEV) {
+        if (import.meta.env.DEV) {
+        console.log('Fetched controls count:', data?.length);
+      }
+      }
       setControls(data || []);
     } catch (err) {
       console.error('Error fetching UCI controls:', err);

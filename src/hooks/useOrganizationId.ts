@@ -1,12 +1,7 @@
 import { useAuth } from '../contexts/AuthContext';
 
-export function useOrganizationId() {
+export function useOrganizationId(): string {
   const { organizationId } = useAuth();
-  
-  if (!organizationId) {
-    console.warn('Organization ID not available - queries may fail');
-    return null;
-  }
-  
+  if (!organizationId) throw new Error('No organisation context — ensure component is wrapped in <AuthProvider>');
   return organizationId;
 }

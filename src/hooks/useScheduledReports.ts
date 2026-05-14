@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { getCurrentOrganizationId } from '@/lib/tenant';
+import { useAuth } from '../contexts/AuthContext';
 
 export interface ScheduledReport {
   id: string;
@@ -12,14 +12,15 @@ export interface ScheduledReport {
 }
 
 export function useScheduledReports() {
+  const { organizationId } = useAuth();
   const [reports, setReports] = useState<ScheduledReport[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchReports = async () => {
     try {
-      const orgId = await getCurrentOrganizationId();
+      
       let query = supabase.from('scheduled_reports').select('*');
-      if (orgId) query = query.eq('organization_id', orgId);
+      if (organizationId) query = query.eq('organization_id', orgId);
       const { data, error } = await query;
       if (error) throw error;
       setReports(data || []);
@@ -32,10 +33,10 @@ export function useScheduledReports() {
 
   const addReport = async (report: any) => {
     try {
-      const orgId = await getCurrentOrganizationId();
+      
       const { data, error } = await supabase
         .from('scheduled_reports')
-        .insert([{ ...report, organization_id: orgId }])
+        .insert([{ ...report, organization_id: organizationId }])
         .select();
       if (error) throw error;
       await fetchReports();

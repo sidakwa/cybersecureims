@@ -1,8 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import { getCurrentOrganizationId } from '@/lib/tenant';
 
-export async function fetchDynamicMetrics() {
-  const orgId = await getCurrentOrganizationId();
+
+export async function fetchDynamicMetrics(orgId: string) {
   
   // Fetch data from all modules
   const [audits, tasks, risks, complaints, suppliers, ncrs, qcps, incidents, sightings] = await Promise.all([
@@ -126,7 +125,6 @@ export async function fetchDynamicMetrics() {
 
 export async function updateReportMetrics() {
   const metrics = await fetchDynamicMetrics();
-  const orgId = await getCurrentOrganizationId();
   
   if (!orgId) return metrics;
   

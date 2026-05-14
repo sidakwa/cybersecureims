@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { getCurrentOrganizationId } from '@/lib/tenant';
+import { useAuth } from '../contexts/AuthContext';
 import type { 
   ComplianceFramework, 
   FrameworkControl, 
@@ -10,13 +10,14 @@ import type {
 } from '@/types/compliance';
 
 export function useFrameworks() {
+  const { organizationId } = useAuth();
   const [frameworks, setFrameworks] = useState<ComplianceFramework[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchFrameworks = async () => {
     try {
-      const orgId = await getCurrentOrganizationId();
+      const orgId = organizationId;
       const { data, error } = await supabase
         .from('compliance_frameworks')
         .select('*')
@@ -41,6 +42,7 @@ export function useFrameworks() {
 }
 
 export function useEvidenceSubmissions(clientOrgId?: string) {
+  const { organizationId } = useAuth();
   const [submissions, setSubmissions] = useState<EvidenceSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,8 +54,7 @@ export function useEvidenceSubmissions(clientOrgId?: string) {
       if (clientOrgId) {
         query = query.eq('client_organization_id', clientOrgId);
       } else {
-        const orgId = await getCurrentOrganizationId();
-        query = query.eq('client_organization_id', orgId);
+        query = query.eq('client_organization_id', organizationId);
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
@@ -115,6 +116,7 @@ export function useEvidenceSubmissions(clientOrgId?: string) {
 }
 
 export function useVerifications() {
+  const { organizationId } = useAuth();
   const [verifications, setVerifications] = useState<ControlVerification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +126,7 @@ export function useVerifications() {
       const { data, error } = await supabase
         .from('control_verifications')
         .select('*')
+        .eq('organization_id', organizationId)
         .order('verified_at', { ascending: false });
       
       if (error) throw error;

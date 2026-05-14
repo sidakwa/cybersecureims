@@ -18,7 +18,7 @@ interface UserWithProfile {
 }
 
 export default function RoleManagement() {
-    const { profile, isAdmin, organization } = useAuth();
+    const { profile, isAdmin, organization, organizationId } = useAuth();
     const [users, setUsers] = useState<UserWithProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);

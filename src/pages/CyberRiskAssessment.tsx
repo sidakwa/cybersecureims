@@ -11,7 +11,7 @@ export default function CyberRiskAssessment() {
   const [risks, setRisks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

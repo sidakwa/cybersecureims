@@ -13,7 +13,7 @@ export default function PriorityActionDashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { profile, loading: authLoading } = useAuth();
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
   const [actions, setActions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const filterParam = searchParams.get('filter');

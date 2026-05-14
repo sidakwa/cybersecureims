@@ -12,7 +12,7 @@ export default function HumanResources() {
   const [loading, setLoading] = useState(true);
   const [personnel, setPersonnel] = useState<any[]>([]);
   
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

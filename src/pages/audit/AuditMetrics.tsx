@@ -23,7 +23,7 @@ export default function AuditMetrics() {
     upcomingDeadlines: []
   });
 
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

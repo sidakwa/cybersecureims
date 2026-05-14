@@ -26,7 +26,7 @@ export default function EvidenceLibrary() {
     evidence_status: 'valid'
   });
 
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

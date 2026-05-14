@@ -15,7 +15,7 @@ export default function UCIControls() {
   const [error, setError] = useState<string | null>(null);
   const [selectedTier, setSelectedTier] = useState('all');
 
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   if (import.meta.env.DEV) {
     console.log('UCIControls - organizationId:', organizationId, 'authLoading:', authLoading);

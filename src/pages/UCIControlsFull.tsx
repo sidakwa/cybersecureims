@@ -32,7 +32,7 @@ export default function UCIControlsFull() {
     evidence_date: ''
   });
 
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

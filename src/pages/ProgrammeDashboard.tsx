@@ -16,7 +16,7 @@ export default function ProgrammeDashboard() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
 
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

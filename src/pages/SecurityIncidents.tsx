@@ -29,7 +29,7 @@ export default function SecurityIncidents() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingIncident, setEditingIncident] = useState<SecurityIncident | null>(null);
   const { profile, loading: authLoading } = useAuth();
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
       if (authLoading) return;

@@ -12,7 +12,7 @@ import { Loader2, FileText, ExternalLink, Calendar, Plus, Trash2 } from 'lucide-
 
 export default function EvidenceManagement() {
   const { profile, loading: authLoading } = useAuth();
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [evidence, setEvidence] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);

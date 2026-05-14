@@ -31,7 +31,7 @@ export default function FindingsRegister() {
     audit_id: ''
   });
 
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

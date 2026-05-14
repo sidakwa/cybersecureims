@@ -35,7 +35,7 @@ interface Mapping {
 
 export default function RiskMapping() {
   const { profile, loading: authLoading } = useAuth();
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [risks, setRisks] = useState<Risk[]>([]);
   const [controls, setControls] = useState<Control[]>([]);

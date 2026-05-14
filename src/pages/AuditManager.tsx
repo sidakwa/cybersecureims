@@ -174,7 +174,7 @@ export default function AuditManager() {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, loading: authLoading } = useAuth();
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
   const [engagements, setEngagements] = useState<AuditEngagement[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAudit, setSelectedAudit] = useState<AuditEngagement | null>(null);

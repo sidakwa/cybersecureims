@@ -12,7 +12,7 @@ export default function LegalRegisters() {
   const [loading, setLoading] = useState(true);
   const [obligations, setObligations] = useState<any[]>([]);
   
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

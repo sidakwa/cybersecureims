@@ -21,7 +21,7 @@ export default function ReportPortal() {
     riskLow: 0
   });
   
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

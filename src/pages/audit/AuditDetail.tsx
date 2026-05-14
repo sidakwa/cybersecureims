@@ -13,7 +13,7 @@ export default function AuditDetail() {
   const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
 
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   const [audit, setAudit] = useState<any>(null);
   const [findings, setFindings] = useState<any[]>([]);

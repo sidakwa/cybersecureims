@@ -36,7 +36,7 @@ export default function DocumentManagement() {
     description: ''
   });
 
-  const organizationId = profile?.organization_id;
+  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;

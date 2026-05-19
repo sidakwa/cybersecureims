@@ -4,37 +4,51 @@ import { supabase } from '../../lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, Plus, Edit, Trash2, AlertCircle, Calendar, User } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Plus, Edit, Trash2, Calendar, User, CheckCircle, AlertCircle } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { AuditNavigation } from '../../components/audit/AuditNavigation';
 
+interface Action {
+  id: string;
+  finding_id: string;
+  action_title: string;
+  description: string;
+  assigned_to: string;
+  due_date: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'overdue';
+  priority: 'high' | 'medium' | 'low';
+  completion_notes: string;
+  finding: { finding_title: string };
+}
+
 export default function ActionTracker() {
-  const { profile, loading: authLoading } = useAuth();
-  const [actions, setActions] = useState<any[]>([]);
+  const { organizationId, loading: authLoading } = useAuth();
+  const [actions, setActions] = useState<Action[]>([]);
+  const [findings, setFindings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingAction, setEditingAction] = useState<any>(null);
+  const [editingAction, setEditingAction] = useState<Action | null>(null);
   const [formData, setFormData] = useState({
-    title: '',
+    finding_id: '',
+    action_title: '',
     description: '',
-    status: 'pending',
-    priority: 'medium',
     assigned_to: '',
     due_date: '',
-    finding_id: ''
+    status: 'pending',
+    priority: 'medium',
+    completion_notes: ''
   });
-
-  const { organizationId } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;
     if (organizationId) {
       fetchActions();
+      fetchFindings();
     } else {
       setLoading(false);
     }
@@ -46,36 +60,36 @@ export default function ActionTracker() {
       setLoading(true);
       const { data, error } = await supabase
         .from('audit_actions')
-        .select('*')
+        .select('*, finding:audit_findings(finding_title)')
         .eq('organization_id', organizationId)
         .order('due_date', { ascending: true });
-
       if (error) throw error;
       setActions(data || []);
-    } catch (err) {
-      console.error('Error fetching actions:', err);
+    } catch (error) {
+      console.error('Error fetching actions:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchFindings = async () => {
+    if (!organizationId) return;
+    const { data } = await supabase
+      .from('audit_findings')
+      .select('id, finding_title')
+      .eq('organization_id', organizationId);
+    setFindings(data || []);
+  };
+
   const saveAction = async () => {
     if (!organizationId) return;
-
-    const payload = {
-      ...formData,
-      organization_id: organizationId
-    };
-
+    const actionData = { organization_id: organizationId, ...formData };
     try {
       if (editingAction) {
-        const { error } = await supabase
-          .from('audit_actions')
-          .update(payload)
-          .eq('id', editingAction.id);
+        const { error } = await supabase.from('audit_actions').update(actionData).eq('id', editingAction.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('audit_actions').insert([payload]);
+        const { error } = await supabase.from('audit_actions').insert([actionData]);
         if (error) throw error;
       }
       await fetchActions();
@@ -110,45 +124,31 @@ export default function ActionTracker() {
   const resetForm = () => {
     setEditingAction(null);
     setFormData({
-      title: '',
+      finding_id: '',
+      action_title: '',
       description: '',
-      status: 'pending',
-      priority: 'medium',
       assigned_to: '',
       due_date: '',
-      finding_id: ''
+      status: 'pending',
+      priority: 'medium',
+      completion_notes: ''
     });
-  };
-
-  const editAction = (action: any) => {
-    setEditingAction(action);
-    setFormData({
-      title: action.title || '',
-      description: action.description || '',
-      status: action.status || 'pending',
-      priority: action.priority || 'medium',
-      assigned_to: action.assigned_to || '',
-      due_date: action.due_date || '',
-      finding_id: action.finding_id || ''
-    });
-    setModalOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'completed': return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
       case 'in_progress': return <Badge className="bg-yellow-100 text-yellow-800">In Progress</Badge>;
-      case 'pending': return <Badge className="bg-red-100 text-red-800">Pending</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
+      case 'overdue': return <Badge className="bg-red-100 text-red-800">Overdue</Badge>;
+      default: return <Badge className="bg-red-100 text-red-800">Pending</Badge>;
     }
   };
 
   const getPriorityBadge = (priority: string) => {
-    switch(priority) {
+    switch (priority) {
       case 'high': return <Badge className="bg-red-100 text-red-800">High</Badge>;
       case 'medium': return <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>;
-      case 'low': return <Badge className="bg-blue-100 text-blue-800">Low</Badge>;
-      default: return <Badge variant="outline">{priority}</Badge>;
+      default: return <Badge className="bg-blue-100 text-blue-800">Low</Badge>;
     }
   };
 
@@ -171,8 +171,7 @@ export default function ActionTracker() {
 
       <div className="flex justify-end">
         <Button onClick={() => { resetForm(); setModalOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Action
+          <Plus className="h-4 w-4 mr-2" /> Add Action
         </Button>
       </div>
 
@@ -181,7 +180,7 @@ export default function ActionTracker() {
           <Card><CardContent className="pt-6 text-center text-gray-500">No actions created.</CardContent></Card>
         ) : (
           actions.map((action) => (
-            <Card key={action.id}>
+            <Card key={action.id} className="hover:shadow-md transition-shadow">
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -191,14 +190,21 @@ export default function ActionTracker() {
                       ) : (
                         <AlertCircle className="h-5 w-5 text-yellow-500" />
                       )}
-                      <h3 className="font-semibold text-lg">{action.title}</h3>
+                      <h3 className="font-semibold text-lg">{action.action_title}</h3>
                       {getStatusBadge(action.status)}
                       {getPriorityBadge(action.priority)}
                     </div>
                     <p className="text-sm text-gray-600">{action.description}</p>
                     <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                      {action.assigned_to && <span className="flex items-center gap-1"><User className="h-3 w-3" />{action.assigned_to}</span>}
-                      {action.due_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Due: {new Date(action.due_date).toLocaleDateString()}</span>}
+                      {action.assigned_to && (
+                        <span className="flex items-center gap-1"><User className="h-3 w-3" />{action.assigned_to}</span>
+                      )}
+                      {action.due_date && (
+                        <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Due: {new Date(action.due_date).toLocaleDateString()}</span>
+                      )}
+                      {action.finding?.finding_title && (
+                        <span className="flex items-center gap-1 text-blue-600">Finding: {action.finding.finding_title}</span>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -210,7 +216,20 @@ export default function ActionTracker() {
                         <SelectItem value="completed">Completed</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button variant="ghost" size="sm" onClick={() => editAction(action)}>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      setEditingAction(action);
+                      setFormData({
+                        finding_id: action.finding_id || '',
+                        action_title: action.action_title,
+                        description: action.description || '',
+                        assigned_to: action.assigned_to || '',
+                        due_date: action.due_date || '',
+                        status: action.status,
+                        priority: action.priority,
+                        completion_notes: action.completion_notes || ''
+                      });
+                      setModalOpen(true);
+                    }}>
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => deleteAction(action.id)} className="text-red-500">
@@ -230,13 +249,30 @@ export default function ActionTracker() {
             <DialogTitle>{editingAction ? 'Edit Action' : 'Add Action'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label>Title *</Label>
-              <Input value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Finding</Label>
+                <Select value={formData.finding_id} onValueChange={(v) => setFormData({...formData, finding_id: v})}>
+                  <SelectTrigger><SelectValue placeholder="Select finding" /></SelectTrigger>
+                  <SelectContent>
+                    {findings.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>{f.finding_title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Action Title</Label>
+                <Input value={formData.action_title} onChange={(e) => setFormData({...formData, action_title: e.target.value})} />
+              </div>
             </div>
             <div>
               <Label>Description</Label>
-              <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} rows={2} />
+              <Textarea rows={2} value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Assigned To</Label><Input value={formData.assigned_to} onChange={(e) => setFormData({...formData, assigned_to: e.target.value})} /></div>
+              <div><Label>Due Date</Label><Input type="date" value={formData.due_date} onChange={(e) => setFormData({...formData, due_date: e.target.value})} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -262,15 +298,9 @@ export default function ActionTracker() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Assigned To</Label>
-                <Input value={formData.assigned_to} onChange={(e) => setFormData({...formData, assigned_to: e.target.value})} />
-              </div>
-              <div>
-                <Label>Due Date</Label>
-                <Input type="date" value={formData.due_date} onChange={(e) => setFormData({...formData, due_date: e.target.value})} />
-              </div>
+            <div>
+              <Label>Completion Notes</Label>
+              <Textarea rows={2} value={formData.completion_notes} onChange={(e) => setFormData({...formData, completion_notes: e.target.value})} />
             </div>
           </div>
           <DialogFooter>

@@ -7,29 +7,28 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Calendar, Clock, Users, FileText } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
-import { AuditNavigation } from '../../components/audit/AuditNavigation';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Plus, Edit, Trash2, Calendar, Users, MapPin, Loader2 } from 'lucide-react';
 
-interface AuditEvent {
+interface CalendarEvent {
   id: string;
   title: string;
   audit_type: string;
   start_date: string;
   end_date: string;
   location: string;
-  status: 'planned' | 'in_progress' | 'completed' | 'cancelled';
+  status: string;
   team_members: string[];
   description: string;
 }
 
 export default function AuditCalendar() {
   const { organizationId, loading: authLoading } = useAuth();
-  const [events, setEvents] = useState<AuditEvent[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<AuditEvent | null>(null);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
+  const [teamMemberInput, setTeamMemberInput] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     audit_type: 'internal',
@@ -40,7 +39,6 @@ export default function AuditCalendar() {
     team_members: [] as string[],
     description: ''
   });
-  const [teamMemberInput, setTeamMemberInput] = useState('');
 
   useEffect(() => {
     if (authLoading) return;
@@ -71,7 +69,12 @@ export default function AuditCalendar() {
 
   const saveEvent = async () => {
     if (!organizationId) return;
-    const eventData = { organization_id: organizationId, ...formData };
+    const eventData = { 
+      organization_id: organizationId, 
+      ...formData,
+      start_date: formData.start_date || null,
+      end_date: formData.end_date || null
+    };
     try {
       if (editingEvent) {
         const { error } = await supabase.from('audit_calendar').update(eventData).eq('id', editingEvent.id);
@@ -85,6 +88,7 @@ export default function AuditCalendar() {
       resetForm();
     } catch (error) {
       console.error('Error saving event:', error);
+      alert('Error saving event. Please check the form.');
     }
   };
 
@@ -136,68 +140,53 @@ export default function AuditCalendar() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex justify-center items-center h-96">
+      <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Audit Calendar</h1>
-        <p className="text-gray-500 mt-1">Schedule and track upcoming audits</p>
-      </div>
-
-      <AuditNavigation />
-
-      <div className="flex justify-end">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-semibold">Audit Calendar</h2>
+          <p className="text-sm text-gray-500">Schedule and track audit activities</p>
+        </div>
         <Button onClick={() => { resetForm(); setModalOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" /> Schedule Audit
+          <Plus className="h-4 w-4 mr-2" /> Add Event
         </Button>
       </div>
 
-      <div className="grid gap-4">
+      <div className="space-y-3">
         {events.length === 0 ? (
-          <Card><CardContent className="pt-6 text-center text-gray-500">No scheduled audits.</CardContent></Card>
+          <Card><CardContent className="pt-6 text-center text-gray-500">No calendar events. Click "Add Event" to schedule an audit.</CardContent></Card>
         ) : (
           events.map((event) => (
             <Card key={event.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="pt-6">
+              <CardContent className="pt-4">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-5 w-5 text-blue-500" />
-                      <h3 className="font-semibold text-lg">{event.title}</h3>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <Calendar className="h-4 w-4 text-blue-500" />
+                      <h3 className="font-semibold">{event.title}</h3>
                       {getStatusBadge(event.status)}
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3 text-gray-400" />
-                        <span>
-                          {event.start_date ? new Date(event.start_date).toLocaleDateString() : 'TBD'}
-                          {' – '}
-                          {event.end_date ? new Date(event.end_date).toLocaleDateString() : 'TBD'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-3 w-3 text-gray-400" />
-                        <span className="capitalize">{event.audit_type}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FileText className="h-3 w-3 text-gray-400" />
-                        <span>{event.location || 'TBD'}</span>
-                      </div>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1"><Users className="h-3 w-3" />{event.audit_type}</span>
+                      {event.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>}
                     </div>
                     {event.team_members?.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-1 mt-2">
                         {event.team_members.map((member) => (
                           <Badge key={member} variant="outline">{member}</Badge>
                         ))}
                       </div>
                     )}
+                    {event.description && <p className="text-sm text-gray-600 mt-2">{event.description}</p>}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 ml-4">
                     <Button variant="ghost" size="sm" onClick={() => {
                       setEditingEvent(event);
                       setFormData({
@@ -228,16 +217,15 @@ export default function AuditCalendar() {
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingEvent ? 'Edit Event' : 'Schedule Audit'}</DialogTitle>
+            <DialogTitle>{editingEvent ? 'Edit Event' : 'Add Calendar Event'}</DialogTitle>
+            <DialogDescription>
+              {editingEvent ? 'Update the event details below.' : 'Schedule a new audit or review event.'}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Title</Label>
-                <Input value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
-              </div>
-              <div>
-                <Label>Audit Type</Label>
+              <div><Label>Title</Label><Input value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} /></div>
+              <div><Label>Audit Type</Label>
                 <Select value={formData.audit_type} onValueChange={(v) => setFormData({...formData, audit_type: v})}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -254,12 +242,8 @@ export default function AuditCalendar() {
               <div><Label>End Date</Label><Input type="date" value={formData.end_date} onChange={(e) => setFormData({...formData, end_date: e.target.value})} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Location</Label>
-                <Input value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} placeholder="Online / Room / Site" />
-              </div>
-              <div>
-                <Label>Status</Label>
+              <div><Label>Location</Label><Input value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} placeholder="Online / Room / Site" /></div>
+              <div><Label>Status</Label>
                 <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v})}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -274,37 +258,22 @@ export default function AuditCalendar() {
             <div>
               <Label>Team Members</Label>
               <div className="flex gap-2 mt-1">
-                <Input
-                  value={teamMemberInput}
-                  onChange={(e) => setTeamMemberInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addTeamMember()}
-                  placeholder="Add team member email"
-                />
-                <Button type="button" variant="outline" onClick={addTeamMember}>Add</Button>
+                <Input value={teamMemberInput} onChange={(e) => setTeamMemberInput(e.target.value)} placeholder="Add team member email" />
+                <Button type="button" onClick={addTeamMember}>Add</Button>
               </div>
-              {formData.team_members.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {formData.team_members.map((member) => (
-                    <Badge
-                      key={member}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-red-50 hover:text-red-600"
-                      onClick={() => removeTeamMember(member)}
-                    >
-                      {member} ×
-                    </Badge>
-                  ))}
-                </div>
-              )}
+              <div className="flex flex-wrap gap-1 mt-2">
+                {formData.team_members.map((member) => (
+                  <Badge key={member} className="cursor-pointer" onClick={() => removeTeamMember(member)}>
+                    {member} ×
+                  </Badge>
+                ))}
+              </div>
             </div>
-            <div>
-              <Label>Description</Label>
-              <Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
-            </div>
+            <div><Label>Description</Label><Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button onClick={saveEvent}>{editingEvent ? 'Update' : 'Schedule'}</Button>
+            <Button onClick={saveEvent}>{editingEvent ? 'Update' : 'Create'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -52,6 +52,7 @@ import Settings from './pages/Settings';
 
 // User Pages
 import UserProfile from './pages/UserProfile';
+import MyAssignments from './pages/MyAssignments';
 
 function LoadingSpinner() {
   return (
@@ -277,6 +278,11 @@ function AppRoutes() {
         <Route
           path="profile"
           element={<UserProfile />}
+        />
+
+        <Route
+          path="my-assignments"
+          element={<MyAssignments />}
         />
       </Route>
     </Routes>

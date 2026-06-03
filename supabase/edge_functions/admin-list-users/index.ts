@@ -82,6 +82,7 @@ Deno.serve(async (req) => {
         email: authUser.email,
         full_name: fullName,
         role,
+        organization_id: profile.organization_id || null,
         department: profile.department || null,
         business_unit: profile.business_unit || null,
         last_sign_in_at: authUser.last_sign_in_at,

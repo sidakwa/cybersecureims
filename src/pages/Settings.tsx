@@ -144,7 +144,7 @@ export default function Settings() {
             <CardContent className="space-y-4">
               <div>
                 <Label>SharePoint API Key</Label>
-                <Input type="password" placeholder="••••••••" />
+                <Input type="password" placeholder="••••••••" autoComplete="off" />
               </div>
               <div>
                 <Label>Azure AD Tenant ID</Label>

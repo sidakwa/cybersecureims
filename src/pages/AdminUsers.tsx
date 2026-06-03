@@ -1,19 +1,41 @@
 import PageHeader from '@/components/PageHeader';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Users, Shield, Mail, Calendar, RefreshCw, UserPlus, Building2 } from 'lucide-react';
+import { Users, Shield, Mail, Calendar, RefreshCw, UserPlus, Building2, UserCog, AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
+interface AdminUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  organization_id: string | null;
+  organization?: {
+    id: string;
+    name: string;
+  };
+  created_at: string | null;
+  last_sign_in_at: string | null;
+}
+
+const ROLE_OPTIONS = [
+  { value: 'admin', label: 'Admin', badge: 'bg-red-100 text-red-800' },
+  { value: 'quality_manager', label: 'Quality Manager', badge: 'bg-blue-100 text-blue-800' },
+  { value: 'auditor', label: 'Auditor', badge: 'bg-green-100 text-green-800' },
+  { value: 'viewer', label: 'Viewer', badge: 'bg-gray-100 text-gray-800' },
+];
+
 export default function AdminUsersPage() {
   const { isAdmin, user, organization } = useAuth();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
@@ -21,6 +43,8 @@ export default function AdminUsersPage() {
   const [inviteRole, setInviteRole] = useState('viewer');
   const [inviteOrgId, setInviteOrgId] = useState('');
   const [inviting, setInviting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingRoleChange, setPendingRoleChange] = useState<{ user: AdminUser; newRole: string } | null>(null);
 
   // Check if user is default org admin
   const isDefaultOrgAdmin = isAdmin && organization?.name === 'Default Organization';
@@ -35,15 +59,16 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('*, organization:organization_id(*)')
-        .order('created_at', { ascending: false });
-      
+      setError(null);
+
+      const { data, error } = await supabase.functions.invoke('admin-list-users');
       if (error) throw error;
-      setUsers(profiles || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
+
+      const payload = data as { users: AdminUser[] };
+      setUsers(payload?.users || []);
+    } catch (fetchError: any) {
+      console.error('Error fetching users:', fetchError);
+      setError(fetchError?.message || 'Failed to load users. Please refresh the page.');
     } finally {
       setLoading(false);
     }
@@ -63,19 +88,35 @@ export default function AdminUsersPage() {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const handleRoleSelection = (target: AdminUser, newRole: string) => {
+    if (target.role === newRole) return;
+    if (target.id === user?.id && newRole !== 'admin') {
+      setError('You cannot remove your own admin role.');
+      return;
+    }
+    setPendingRoleChange({ user: target, newRole });
+  };
+
+  const confirmRoleChange = async () => {
+    if (!pendingRoleChange) return;
+
+    const { user: target, newRole } = pendingRoleChange;
+
+    setLoading(true);
+    setError(null);
+
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('id', userId);
-      
+      const { error } = await supabase.functions.invoke('admin-update-role', {
+        body: JSON.stringify({ userId: target.id, newRole }),
+      });
       if (error) throw error;
-      await fetchUsers();
-      alert(`User role updated to ${newRole}`);
-    } catch (error) {
-      console.error('Error updating role:', error);
-      alert('Failed to update role');
+      setUsers((current) => current.map((item) => item.id === target.id ? { ...item, role: newRole } : item));
+      setPendingRoleChange(null);
+    } catch (updateError: any) {
+      console.error('Error updating role:', updateError);
+      setError(updateError?.message || 'Failed to update role');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -231,7 +272,19 @@ export default function AdminUsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Users List */}
+      {error && (
+        <div className="mb-4">
+          <Card className="bg-red-50 border-red-200">
+            <CardContent className="py-4 px-5 text-red-700">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                <span>{error}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -245,59 +298,87 @@ export default function AdminUsersPage() {
           ) : users.length === 0 ? (
             <div className="text-center py-8 text-gray-500">No users found</div>
           ) : (
-            <div className="space-y-4">
-              {users.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="font-medium">{user.full_name || user.email?.split('@')[0]}</span>
-                      <Badge className={getRoleBadgeColor(user.role)}>
-                        {user.role?.toUpperCase() || 'VIEWER'}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Mail className="h-3 w-3" />
-                      <span>{user.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                      <Building2 className="h-3 w-3" />
-                      <span>Organization: {user.organization?.name || 'Not assigned'}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Calendar className="h-3 w-3" />
-                      <span>Joined: {new Date(user.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <select
-                      value={user.role || 'viewer'}
-                      onChange={(e) => updateUserRole(user.id, e.target.value)}
-                      className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="viewer">Viewer</option>
-                      <option value="auditor">Auditor</option>
-                      <option value="quality_manager">Quality Manager</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                    {isDefaultOrgAdmin && (
-                      <select
-                        value={user.organization_id || ''}
-                        onChange={(e) => updateUserOrganization(user.id, e.target.value)}
-                        className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[150px]"
-                      >
-                        <option value="">No Organization</option>
-                        {organizations.map((org) => (
-                          <option key={org.id} value={org.id}>{org.name}</option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="p-3 text-left">User</th>
+                    <th className="p-3 text-left">Email</th>
+                    <th className="p-3 text-left">Last seen</th>
+                    <th className="p-3 text-left">Organization</th>
+                    <th className="p-3 text-left">Role</th>
+                    <th className="p-3 text-left">Change Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((userItem) => (
+                    <tr key={userItem.id} className="border-b hover:bg-gray-50">
+                      <td className="p-3 font-medium">{userItem.full_name || userItem.email.split('@')[0]}</td>
+                      <td className="p-3">{userItem.email}</td>
+                      <td className="p-3 text-gray-500">{formatLastSeen(userItem.last_sign_in_at)}</td>
+                      <td className="p-3">{userItem.organization?.name || 'Not assigned'}</td>
+                      <td className="p-3">
+                        <Badge className={getRoleBadgeColor(userItem.role)}>
+                          {getRoleLabel(userItem.role)}
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <Select
+                          value={userItem.role}
+                          onValueChange={(value) => handleRoleSelection(userItem, value)}
+                          disabled={userItem.id === user?.id}
+                        >
+                          <SelectTrigger className="w-40">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROLE_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {userItem.id === user?.id && (
+                          <p className="text-xs text-gray-500 mt-1">Cannot change your own role.</p>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={Boolean(pendingRoleChange)} onOpenChange={(open) => { if (!open) setPendingRoleChange(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm role change</DialogTitle>
+            <DialogDescription>
+              {pendingRoleChange ? (
+                <>
+                  Change <strong>{pendingRoleChange.user.full_name}</strong> from <strong>{getRoleLabel(pendingRoleChange.user.role)}</strong> to <strong>{getRoleLabel(pendingRoleChange.newRole)}</strong>?
+                </>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+          {pendingRoleChange?.newRole === 'admin' && (
+            <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-900">
+              Granting admin access gives full system privileges. Confirm only if this user should manage roles and core settings.
+            </div>
+          )}
+          <DialogFooter className="mt-4 gap-2">
+            <Button variant="outline" onClick={() => setPendingRoleChange(null)} className="w-full sm:w-auto">
+              Cancel
+            </Button>
+            <Button onClick={confirmRoleChange} disabled={!pendingRoleChange || loading} className="w-full sm:w-auto">
+              {loading ? 'Updating…' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

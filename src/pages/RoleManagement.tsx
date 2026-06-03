@@ -40,7 +40,7 @@ export default function RoleManagement() {
   const currentOrgId = organizationId;
 
   useEffect(() => {
-    if (isAdmin && currentOrgId) {
+    if (isAdmin) {
       fetchUsers();
     } else {
       setLoading(false);
@@ -48,22 +48,10 @@ export default function RoleManagement() {
   }, [isAdmin, currentOrgId]);
 
   const fetchUsers = async () => {
-    if (!currentOrgId) {
-      if (import.meta.env.DEV) {
-        console.log('No organization ID available');
-      }
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      if (import.meta.env.DEV) {
-        console.log('Fetching users for org:', currentOrgId);
-      }
-
       const { data, error: invokeError } = await supabase.functions.invoke('admin-list-users');
       if (invokeError) {
         throw invokeError;
@@ -74,7 +62,10 @@ export default function RoleManagement() {
         throw new Error('Unexpected response from admin-list-users');
       }
 
-      setUsers(payload.users.filter((user) => user.organization_id === currentOrgId));
+      const filtered = currentOrgId
+        ? payload.users.filter((u) => u.organization_id === currentOrgId)
+        : payload.users;
+      setUsers(filtered);
     } catch (err: any) {
       console.error('Error fetching users:', err);
       setError(err?.message || 'Failed to load users. Please refresh the page.');

@@ -16,6 +16,8 @@ import { AuditNavigation } from '../../components/audit/AuditNavigation';
 export default function FindingsRegister() {
   const { profile, loading: authLoading } = useAuth();
   const [findings, setFindings] = useState<any[]>([]);
+  const [controls, setControls] = useState<any[]>([]);
+  const [risks, setRisks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingFinding, setEditingFinding] = useState<any>(null);
@@ -28,7 +30,9 @@ export default function FindingsRegister() {
     due_date: '',
     observation: '',
     recommendation: '',
-    audit_id: ''
+    audit_id: '',
+    linked_control_id: '',
+    linked_risk_id: '',
   });
 
   const { organizationId } = useAuth();
@@ -37,10 +41,24 @@ export default function FindingsRegister() {
     if (authLoading) return;
     if (organizationId) {
       fetchFindings();
+      fetchControls();
+      fetchRisks();
     } else {
       setLoading(false);
     }
   }, [organizationId, authLoading]);
+
+  const fetchControls = async () => {
+    if (!organizationId) return;
+    const { data } = await supabase.from('framework_controls').select('id, control_id, control_title, framework').order('control_id');
+    setControls(data || []);
+  };
+
+  const fetchRisks = async () => {
+    if (!organizationId) return;
+    const { data } = await supabase.from('cyber_risks').select('id, risk_title, risk_level').eq('organization_id', organizationId).order('risk_title');
+    setRisks(data || []);
+  };
 
   const fetchFindings = async () => {
     if (!organizationId) return;
@@ -74,7 +92,9 @@ export default function FindingsRegister() {
       due_date: formData.due_date || null,
       observation: formData.observation,
       recommendation: formData.recommendation,
-      audit_id: formData.audit_id || null
+      audit_id: formData.audit_id || null,
+      linked_control_id: formData.linked_control_id || null,
+      linked_risk_id: formData.linked_risk_id || null,
     };
 
     try {
@@ -128,7 +148,9 @@ export default function FindingsRegister() {
       due_date: '',
       observation: '',
       recommendation: '',
-      audit_id: ''
+      audit_id: '',
+      linked_control_id: '',
+      linked_risk_id: '',
     });
   };
 
@@ -143,7 +165,9 @@ export default function FindingsRegister() {
       due_date: finding.due_date || '',
       observation: finding.observation || '',
       recommendation: finding.recommendation || '',
-      audit_id: finding.audit_id || ''
+      audit_id: finding.audit_id || '',
+      linked_control_id: finding.linked_control_id || '',
+      linked_risk_id: finding.linked_risk_id || '',
     });
     setModalOpen(true);
   };
@@ -241,10 +265,20 @@ export default function FindingsRegister() {
                       {finding.recommendation && (
                         <p className="text-sm text-blue-600 mt-2">Recommendation: {finding.recommendation}</p>
                       )}
-                      <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 mt-3 text-sm text-gray-500 flex-wrap">
                         {finding.finding_ref && <span className="font-mono text-xs">Ref: {finding.finding_ref}</span>}
                         {finding.owner && <span className="flex items-center gap-1"><User className="h-3 w-3" />Owner: {finding.owner}</span>}
                         {finding.due_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Due: {new Date(finding.due_date).toLocaleDateString()}</span>}
+                        {finding.linked_control_id && (
+                          <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+                            ⛓ {controls.find(c => c.id === finding.linked_control_id)?.control_id || 'Control linked'}
+                          </span>
+                        )}
+                        {finding.linked_risk_id && (
+                          <span className="text-xs bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full border border-orange-200">
+                            ⚠ {risks.find(r => r.id === finding.linked_risk_id)?.risk_title || 'Risk linked'}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2 ml-4">
@@ -354,6 +388,32 @@ export default function FindingsRegister() {
                 onChange={(e) => setFormData({...formData, recommendation: e.target.value})}
                 rows={2}
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+              <div>
+                <Label>Linked Control</Label>
+                <Select value={formData.linked_control_id} onValueChange={(v) => setFormData({...formData, linked_control_id: v === 'none' ? '' : v})}>
+                  <SelectTrigger className="bg-white border-gray-300"><SelectValue placeholder="Link to control..." /></SelectTrigger>
+                  <SelectContent className="bg-white border-gray-200 shadow-lg max-h-60">
+                    <SelectItem value="none">— None —</SelectItem>
+                    {controls.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.control_id} — {c.control_title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Linked Risk</Label>
+                <Select value={formData.linked_risk_id} onValueChange={(v) => setFormData({...formData, linked_risk_id: v === 'none' ? '' : v})}>
+                  <SelectTrigger className="bg-white border-gray-300"><SelectValue placeholder="Link to risk..." /></SelectTrigger>
+                  <SelectContent className="bg-white border-gray-200 shadow-lg max-h-60">
+                    <SelectItem value="none">— None —</SelectItem>
+                    {risks.map(r => (
+                      <SelectItem key={r.id} value={r.id}>{r.risk_title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>

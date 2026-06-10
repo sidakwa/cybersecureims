@@ -40,9 +40,31 @@ const statusScore: Record<string, number> = {
   compliant: 100, partial: 50, non_compliant: 0, not_assessed: 0,
 };
 
+// Normalise regulation names to match framework aliases used in control_framework_mappings
+const FRAMEWORK_ALIASES: Record<string, string[]> = {
+  'ISO 27001':    ['ISO27001','ISO 27001','ISO27001:2022'],
+  'ISO 27002':    ['ISO27002','ISO 27002'],
+  'NIST CSF':     ['NIST_CSF','NIST CSF','NIST-CSF'],
+  'NIST 800-53':  ['NIST_800_53','NIST 800-53','NIST800-53'],
+  'PCI DSS':      ['PCI_DSS','PCI DSS','PCI-DSS'],
+  'CIS Controls': ['CIS_Controls','CIS Controls','CIS'],
+  'SOC 2':        ['SOC2','SOC 2','SOC-2'],
+  'POPIA':        ['POPIA'],
+  'GDPR':         ['GDPR'],
+  'HIPAA':        ['HIPAA'],
+  'King IV':      ['King IV','KingIV'],
+};
+function normFramework(name: string): string[] {
+  for (const [key, aliases] of Object.entries(FRAMEWORK_ALIASES)) {
+    if (key === name || aliases.includes(name)) return aliases;
+  }
+  return [name];
+}
+
 export default function RegulatoryDashboard() {
   const { organizationId, loading: authLoading } = useAuth();
   const [requirements, setRequirements] = useState<any[]>([]);
+  const [autoScores, setAutoScores] = useState<Record<string, { score: number; implemented: number; total: number }>>({});
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -52,20 +74,47 @@ export default function RegulatoryDashboard() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (organizationId) fetchRequirements();
+    if (organizationId) fetchAll();
   }, [organizationId, authLoading]);
 
-  const fetchRequirements = async () => {
+  const fetchAll = async () => {
     if (!organizationId) return;
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('regulatory_requirements')
-        .select('*')
-        .eq('organization_id', organizationId)
-        .order('regulation_name', { ascending: true });
-      if (error) throw error;
-      setRequirements(data || []);
+      const [{ data: reqData }, { data: ctrlData }, { data: mappingData }] = await Promise.all([
+        supabase.from('regulatory_requirements').select('*').eq('organization_id', organizationId).order('regulation_name'),
+        supabase.from('framework_controls').select('id, framework, status').eq('organization_id', organizationId),
+        supabase.from('control_framework_mappings').select('source_control_id, target_framework').eq('organization_id', organizationId),
+      ]);
+      setRequirements(reqData || []);
+
+      // Auto-score: for each unique regulation_name, find controls and their implementation status
+      const scores: Record<string, { score: number; implemented: number; total: number }> = {};
+      const regulations = [...new Set((reqData || []).map((r: any) => r.regulation_name))];
+
+      for (const regName of regulations) {
+        const aliases = normFramework(regName as string);
+        // Controls native to this framework
+        const nativeControls = (ctrlData || []).filter((c: any) => aliases.includes(c.framework));
+        // Controls mapped TO this framework from another
+        const mappedControlIds = new Set(
+          (mappingData || [])
+            .filter((m: any) => aliases.includes(m.target_framework))
+            .map((m: any) => m.source_control_id)
+        );
+        const mappedControls = (ctrlData || []).filter((c: any) => mappedControlIds.has(c.id) && !aliases.includes(c.framework));
+        const allControls = [...nativeControls, ...mappedControls];
+
+        if (allControls.length > 0) {
+          const implemented = allControls.filter((c: any) => c.status === 'implemented').length;
+          scores[regName as string] = {
+            score: Math.round((implemented / allControls.length) * 100),
+            implemented,
+            total: allControls.length,
+          };
+        }
+      }
+      setAutoScores(scores);
     } catch (err) {
       console.error('Error fetching regulatory requirements:', err);
     } finally {
@@ -91,7 +140,6 @@ export default function RegulatoryDashboard() {
         const { error } = await supabase.from('regulatory_requirements').insert([payload]);
         if (error) throw error;
       }
-      await fetchRequirements();
       setModalOpen(false);
       resetForm();
     } catch (err) {
@@ -102,7 +150,7 @@ export default function RegulatoryDashboard() {
   const deleteReq = async (id: string) => {
     if (!confirm('Delete this regulatory requirement?')) return;
     await supabase.from('regulatory_requirements').delete().eq('id', id);
-    await fetchRequirements();
+    await fetchAll();
   };
 
   const resetForm = () => { setEditing(null); setFormData(EMPTY_FORM); };
@@ -201,15 +249,28 @@ export default function RegulatoryDashboard() {
       {Object.keys(byRegulation).length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {Object.entries(byRegulation).map(([reg, items]) => {
-            const score = Math.round(items.reduce((s, r) => s + (statusScore[r.compliance_status] || 0), 0) / items.length);
+            const manualScore = Math.round(items.reduce((s, r) => s + (statusScore[r.compliance_status] || 0), 0) / items.length);
+            const auto = autoScores[reg];
             return (
               <Card key={reg} className="bg-white border-gray-200 shadow-sm">
                 <CardContent className="p-3">
                   <p className="font-semibold text-[#0D2240] text-sm mb-1">{reg}</p>
                   <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>{items.length} requirements</span><span>{score}%</span>
+                    <span>{items.length} requirements</span>
+                    <span>Manual: {manualScore}%</span>
                   </div>
-                  <Progress value={score} className="h-2" />
+                  <Progress value={manualScore} className="h-1.5 mb-2" />
+                  {auto ? (
+                    <>
+                      <div className="flex justify-between text-xs text-purple-600 mb-1">
+                        <span>Auto ({auto.implemented}/{auto.total} controls)</span>
+                        <span>{auto.score}%</span>
+                      </div>
+                      <Progress value={auto.score} className="h-1.5 [&>div]:bg-purple-500" />
+                    </>
+                  ) : (
+                    <p className="text-xs text-gray-400 mt-1">No control mappings yet</p>
+                  )}
                 </CardContent>
               </Card>
             );

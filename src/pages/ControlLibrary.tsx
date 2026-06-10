@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,12 +10,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Loader2, Shield, CheckCircle, Clock, XCircle, Edit, Save, X, Plus, Trash2, Search } from 'lucide-react';
+import { Loader2, Shield, CheckCircle, Clock, XCircle, Edit, Save, X, Plus, Trash2, Search, GitBranch, ExternalLink } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 
 export default function ControlLibrary() {
   const { profile, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [controls, setControls] = useState<any[]>([]);
+  const [mappingCounts, setMappingCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [selectedFramework, setSelectedFramework] = useState<string>('all');
   const [modalOpen, setModalOpen] = useState(false);
@@ -44,15 +47,21 @@ export default function ControlLibrary() {
     try {
       setLoading(true);
       let query = supabase.from('framework_controls').select('*');
-
-      if (selectedFramework !== 'all') {
-        query = query.eq('framework', selectedFramework);
-      }
-
+      if (selectedFramework !== 'all') query = query.eq('framework', selectedFramework);
       const { data, error } = await query.order('control_id', { ascending: true });
-
       if (error) throw error;
       setControls(data || []);
+
+      // Fetch mapping counts
+      const { data: mappingData } = await supabase
+        .from('control_framework_mappings')
+        .select('source_control_id')
+        .eq('organization_id', organizationId);
+      const counts: Record<string, number> = {};
+      (mappingData || []).forEach((m: any) => {
+        counts[m.source_control_id] = (counts[m.source_control_id] || 0) + 1;
+      });
+      setMappingCounts(counts);
     } catch (err) {
       console.error('Error fetching controls:', err);
     } finally {
@@ -176,26 +185,43 @@ export default function ControlLibrary() {
                   <th className="text-left p-3">Framework</th>
                   <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Owner</th>
+                  <th className="text-left p-3">Mappings</th>
                   <th className="text-center p-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredControls.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-8 text-gray-500">No controls found. </td>
+                    <td colSpan={7} className="text-center py-8 text-gray-500">No controls found.</td>
                   </tr>
                 ) : (
                   filteredControls.map((control) => (
                     <tr key={control.id} className="border-b hover:bg-gray-50">
                       <td className="p-3 font-mono text-xs">{control.control_id}</td>
-                      <td className="p-3">{control.control_title}</td>
+                      <td className="p-3">
+                        <button onClick={() => navigate(`/controls/${control.id}`)} className="text-left text-[#0057B8] hover:underline font-medium text-sm">
+                          {control.control_title}
+                        </button>
+                      </td>
                       <td className="p-3"><Badge variant="outline">{control.framework}</Badge></td>
                       <td className="p-3">{getStatusBadge(control.status)}</td>
                       <td className="p-3">{control.owner || '-'}</td>
+                      <td className="p-3">
+                        {mappingCounts[control.id] ? (
+                          <Badge className="bg-purple-100 text-purple-800 cursor-pointer" onClick={() => navigate(`/controls/${control.id}`)}>
+                            <GitBranch className="h-3 w-3 mr-1 inline" />{mappingCounts[control.id]}
+                          </Badge>
+                        ) : <span className="text-gray-300 text-xs">—</span>}
+                      </td>
                       <td className="p-3 text-center">
-                        <Button variant="ghost" size="sm" onClick={() => editControl(control)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1 justify-center">
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/controls/${control.id}`)} title="View chain">
+                            <ExternalLink className="h-4 w-4 text-[#0057B8]" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => editControl(control)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))

@@ -70,6 +70,7 @@ import BusinessProcessRegister from './pages/BusinessProcessRegister';
 import ManagementAttestations from './pages/ManagementAttestations';
 import RegulatoryDashboard from './pages/RegulatoryDashboard';
 import WorkflowEngine from './pages/WorkflowEngine';
+import ControlDetail from './pages/ControlDetail';
 
 function LoadingSpinner() {
   return (
@@ -344,6 +345,9 @@ function AppRoutes() {
 
         {/* Workflow Engine */}
         <Route path="workflows" element={<WorkflowEngine />} />
+
+        {/* Control Detail Chain View */}
+        <Route path="controls/:id" element={<ControlDetail />} />
 
         {/* Platform Admin */}
         <Route

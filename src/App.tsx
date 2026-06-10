@@ -54,6 +54,23 @@ import Settings from './pages/Settings';
 import UserProfile from './pages/UserProfile';
 import MyAssignments from './pages/MyAssignments';
 
+// New Pages
+import ApplicationRegister from './pages/ApplicationRegister';
+import RiskHeatmapPage from './pages/RiskHeatmapPage';
+import EvidenceCollection from './pages/EvidenceCollection';
+import ControlTesting from './pages/ControlTesting';
+import ExceptionRegister from './pages/ExceptionRegister';
+import ThreatRegister from './pages/ThreatRegister';
+import SecurityObjectives from './pages/SecurityObjectives';
+import RemediationProgrammes from './pages/RemediationProgrammes';
+import EvidenceRequests from './pages/EvidenceRequests';
+import IntegrationManager from './pages/IntegrationManager';
+import DataAssetRegister from './pages/DataAssetRegister';
+import BusinessProcessRegister from './pages/BusinessProcessRegister';
+import ManagementAttestations from './pages/ManagementAttestations';
+import RegulatoryDashboard from './pages/RegulatoryDashboard';
+import WorkflowEngine from './pages/WorkflowEngine';
+
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -252,6 +269,81 @@ function AppRoutes() {
           path="bc-dr"
           element={<BcDrPlans />}
         />
+
+        {/* Application Register */}
+        <Route
+          path="applications"
+          element={<ApplicationRegister />}
+        />
+
+        {/* Risk Heatmap */}
+        <Route
+          path="risk-heatmap"
+          element={<RiskHeatmapPage />}
+        />
+
+        {/* Evidence Repository */}
+        <Route
+          path="evidence"
+          element={<EvidenceCollection />}
+        />
+
+        {/* Control Testing */}
+        <Route
+          path="control-testing"
+          element={<ControlTesting />}
+        />
+
+        {/* Exception Register */}
+        <Route
+          path="exceptions"
+          element={<ExceptionRegister />}
+        />
+
+        {/* Threat Register */}
+        <Route
+          path="threat-register"
+          element={<ThreatRegister />}
+        />
+
+        {/* Security Objectives */}
+        <Route
+          path="security-objectives"
+          element={<SecurityObjectives />}
+        />
+
+        {/* Remediation Programmes */}
+        <Route
+          path="remediation-programmes"
+          element={<RemediationProgrammes />}
+        />
+
+        {/* Audit Evidence Requests */}
+        <Route
+          path="evidence-requests"
+          element={<EvidenceRequests />}
+        />
+
+        {/* Integration Manager */}
+        <Route
+          path="integrations"
+          element={<IntegrationManager />}
+        />
+
+        {/* Data Asset Register */}
+        <Route path="data-assets" element={<DataAssetRegister />} />
+
+        {/* Business Process Register */}
+        <Route path="business-processes" element={<BusinessProcessRegister />} />
+
+        {/* Management Attestations */}
+        <Route path="attestations" element={<ManagementAttestations />} />
+
+        {/* Regulatory Dashboard */}
+        <Route path="regulatory-dashboard" element={<RegulatoryDashboard />} />
+
+        {/* Workflow Engine */}
+        <Route path="workflows" element={<WorkflowEngine />} />
 
         {/* Platform Admin */}
         <Route

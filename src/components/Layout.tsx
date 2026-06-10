@@ -37,6 +37,16 @@ import {
   Inbox,
   Archive,
   Wrench,
+  Monitor,
+  FolderOpen,
+  Grid3X3,
+  ShieldAlert,
+  Skull,
+  Plug,
+  Network,
+  UserCheck,
+  Scale,
+  Workflow,
 } from 'lucide-react';
 
 function CustomDropdown({ trigger, children, width = 'w-56' }: { trigger: React.ReactNode; children: React.ReactNode; width?: string }) {
@@ -94,6 +104,9 @@ export default function Layout() {
     { name: 'Executive Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'CSI Programme', path: '/programme-dashboard', icon: Target },
     { name: 'Compliance Scorecard', path: '/scorecard', icon: CheckCircle },
+    { name: 'Regulatory Dashboard', path: '/regulatory-dashboard', icon: Scale },
+    { name: 'Risk Heatmap', path: '/risk-heatmap', icon: Grid3X3 },
+    { name: 'Priority Actions', path: '/priority-actions', icon: Zap },
     { name: 'Report Portal', path: '/reports', icon: FileBarChart },
   ];
 
@@ -103,6 +116,7 @@ export default function Layout() {
     { name: 'Security Architecture', path: '/security-architecture', icon: Layers },
     { name: 'ISMS Authority Chain', path: '/isms-authority', icon: GitBranch },
     { name: 'Statement of Applicability', path: '/soa', icon: FileCheck },
+    { name: 'Security Objectives', path: '/security-objectives', icon: Target },
   ];
 
   // 3. INVENTORY
@@ -110,6 +124,10 @@ export default function Layout() {
     { name: 'UCI Controls', path: '/uci-controls', icon: BarChart },
     { name: 'Control Library', path: '/controls', icon: Shield },
     { name: 'Asset Inventory', path: '/assets', icon: HardDrive },
+    { name: 'Application Register', path: '/applications', icon: Monitor },
+    { name: 'Data Asset Register', path: '/data-assets', icon: Database },
+    { name: 'Business Process Register', path: '/business-processes', icon: Network },
+    { name: 'Exception Register', path: '/exceptions', icon: ShieldAlert },
     { name: 'Policy Library', path: '/documents', icon: FileText },
     { name: 'Vendor Register', path: '/vendors', icon: Truck },
     { name: 'Compliance Obligations', path: '/legal', icon: BookOpen },
@@ -119,6 +137,7 @@ export default function Layout() {
   // 4. ASSESSMENT
   const assessmentNav = [
     { name: 'Audit Portfolio', path: '/audits/portfolio', icon: ClipboardList },
+    { name: 'Control Testing', path: '/control-testing', icon: ClipboardCheck },
     { name: 'Pen Tests', path: '/pen-tests', icon: Search },
     { name: 'Vulnerability Scans', path: '/vulnerabilities', icon: Bug },
     { name: 'Risk Assessments', path: '/risk-assessment', icon: AlertTriangle },
@@ -129,13 +148,16 @@ export default function Layout() {
   // 5. FINDINGS & RISKS
   const findingsNav = [
     { name: 'Findings Register', path: '/audits/findings', icon: AlertTriangle },
-    { name: 'Cyber Risk Register', path: '/risk-register', icon: TrendingUp },
+    { name: 'Cyber Risk Register', path: '/risk-assessment', icon: TrendingUp },
+    { name: 'Threat Register', path: '/threat-register', icon: Skull },
+    { name: 'Risk Mapping', path: '/risk-mapping', icon: GitBranch },
     { name: 'Vulnerability Tracker', path: '/vulnerability-tracker', icon: Bug },
     { name: 'Incident Register', path: '/incidents', icon: Zap },
   ];
 
   // 6. REMEDIATION
   const remediationNav = [
+    { name: 'Remediation Programmes', path: '/remediation-programmes', icon: Wrench },
     { name: 'CSI Items', path: '/csi-items', icon: Target },
     { name: 'Work Packages', path: '/work-packages', icon: Package },
     { name: 'Action Tracker', path: '/audits/actions', icon: CheckCircle },
@@ -143,6 +165,9 @@ export default function Layout() {
 
   // 7. ASSURANCE & RESPONSE
   const assuranceNav = [
+    { name: 'Evidence Repository', path: '/evidence', icon: FolderOpen },
+    { name: 'Evidence Requests', path: '/evidence-requests', icon: ClipboardList },
+    { name: 'Management Attestations', path: '/attestations', icon: UserCheck },
     { name: 'SARE Inbox', path: '/sare/inbox', icon: Inbox },
     { name: 'SARE Templates', path: '/sare/templates', icon: FileText },
     { name: 'SARE Archive', path: '/sare/archive', icon: Archive },
@@ -152,6 +177,8 @@ export default function Layout() {
   // 8. ADMIN
   const adminNav = [
     { name: 'User Management', path: '/admin/roles', icon: Users },
+    { name: 'Workflow Engine', path: '/workflows', icon: Workflow },
+    { name: 'Integration Manager', path: '/integrations', icon: Plug },
     { name: 'Bulk Import', path: '/bulk-import', icon: Upload },
     { name: 'System Settings', path: '/settings', icon: Settings },
     { name: 'Reference Data', path: '/admin/reference-data', icon: Database },

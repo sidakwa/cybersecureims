@@ -1,8 +1,25 @@
-# CyberSecureIMS — Full Code Guide
+# CyberSecureIMS — Integration Guide
 
-## What's in this package
+## What's in this repo
 
-All code generated for Phases 1–6 of the ComplyIMS → CyberSecureIMS fork.
+A full-stack GRC (Governance, Risk & Compliance) platform built on React + Supabase, structured around an 8-module security lifecycle. Covers everything from executive dashboards and control libraries through audit management, risk tracking, remediation programmes, and evidence assurance.
+
+---
+
+## Navigation Modules
+
+The top-bar navigation is organized into 8 lifecycle sections (see [src/components/Layout.tsx](src/components/Layout.tsx)):
+
+| # | Module | Key Pages |
+|---|--------|-----------|
+| 1 | **Reporting** | Executive Dashboard, CSI Programme, Compliance Scorecard, Regulatory Dashboard, Risk Heatmap, Priority Actions, Report Portal |
+| 2 | **Strategy & Architecture** | Information Security Strategy, Security Architecture, ISMS Authority Chain, Statement of Applicability, Security Objectives |
+| 3 | **Inventory** | UCI Controls, Control Library, Asset Inventory, Application Register, Data Asset Register, Business Process Register, Exception Register, Policy Library, Vendor Register, Compliance Obligations, Security Training |
+| 4 | **Assessment** | Audit Portfolio, Control Testing, Pen Tests, Vulnerability Scans, Risk Assessments, TPRM Questionnaires, Audit Calendar |
+| 5 | **Findings & Risks** | Findings Register, Cyber Risk Register, Threat Register, Risk Mapping, Vulnerability Tracker, Incident Register |
+| 6 | **Remediation** | Remediation Programmes, CSI Items, Work Packages, Action Tracker |
+| 7 | **Assurance & Response** | Evidence Repository, Evidence Requests, Management Attestations, SARE Inbox/Templates/Archive, Policy Approval Workflow |
+| 8 | **Admin** | User Management, Workflow Engine, Integration Manager, Bulk Import, System Settings, Reference Data |
 
 ---
 
@@ -10,59 +27,165 @@ All code generated for Phases 1–6 of the ComplyIMS → CyberSecureIMS fork.
 
 ```
 cybersecureims/
-├── .env.example                          ← Phase 1: env vars
+├── .env.example
 ├── scripts/
-│   └── rename-project.sh                 ← Phase 1: fork rename script
+│   └── rename-project.sh
 │
 ├── supabase/
 │   ├── migrations/
-│   │   ├── 01_schema_migration.sql       ← Phase 2: full schema + new tables
-│   │   ├── 02_rls_policies.sql           ← Phase 2: Row Level Security
-│   │   └── 03_seed_framework_controls.sql← Phase 2+6: ISO27001(93) + SOC2(39) + NIST CSF(100+) controls
+│   │   ├── 01_schema_migration.sql          ← core schema + base tables
+│   │   ├── 02_rls_policies.sql              ← Row Level Security (org-scoped)
+│   │   ├── 03_seed_framework_controls.sql   ← ISO 27001 (93) + SOC 2 (39) + NIST CSF (100+)
+│   │   ├── 04_applications.sql              ← application_register table
+│   │   ├── 05_control_testing_exceptions.sql← control_test_records + security_exceptions
+│   │   ├── 06_threat_register_objectives.sql← threat_register + security_objectives
+│   │   ├── 07_tier2_tables.sql              ← remediation_programmes, evidence_requests, integrations
+│   │   ├── 08_tier3_tables.sql              ← data_assets, business_processes, attestations,
+│   │   │                                      regulatory_obligations, workflows
+│   │   ├── 09_relationship_layer.sql        ← FK columns linking findings/evidence/tests/exceptions
+│   │   │                                      to framework_controls + cyber_risks;
+│   │   │                                      control_framework_mappings cross-framework table
+│   │   └── 10_platform_admin_flag.sql       ← platform_admin flag on profiles
 │   └── edge_functions/
-│       └── seed-org-controls/index.ts    ← Phase 6: auto-seed on org create
+│       └── seed-org-controls/index.ts       ← auto-seeds framework controls on org create
 │
 ├── src/
-│   ├── App.tsx                           ← Phase 6: all routes updated
+│   ├── App.tsx                              ← all routes (80+ pages)
+│   ├── main.tsx
 │   │
 │   ├── lib/
-│   │   └── cybersecure-types.ts          ← Phase 3a: all TypeScript interfaces
+│   │   ├── cybersecure-types.ts             ← all TypeScript interfaces
+│   │   ├── supabase.ts                      ← Supabase client init
+│   │   ├── permissions.ts                   ← RBAC helpers
+│   │   ├── reportGenerator.ts               ← PDF/Excel report generation
+│   │   ├── evidenceReportGenerator.ts
+│   │   ├── hrReportGenerator.ts
+│   │   ├── normalize.ts
+│   │   └── trends.ts                        ← metric trend calculations
 │   │
-│   ├── hooks/
-│   │   ├── useControls.ts                ← Phase 3b: framework controls CRUD + stats
-│   │   ├── useAssets.ts                  ← Phase 3b: asset inventory CRUD
-│   │   ├── useVulnerabilities.ts         ← Phase 3b: vuln tracker CRUD + SLA
-│   │   ├── usePenTests.ts                ← Phase 3b: pen test CRUD
-│   │   ├── useBcDrPlans.ts               ← Phase 3b: BC/DR CRUD
-│   │   └── useSecurityIncidents.ts       ← Phase 3b: incidents + MTTD/MTTR
+│   ├── hooks/                               ← Supabase CRUD hooks (all org-scoped)
+│   │   ├── useAuth.ts
+│   │   ├── useControls.ts                   ← framework controls + stats
+│   │   ├── useAssets.ts
+│   │   ├── useVulnerabilities.ts            ← vuln tracker + SLA
+│   │   ├── usePenTests.ts
+│   │   ├── useBcDrPlans.ts
+│   │   ├── useSecurityIncidents.ts          ← incidents + MTTD/MTTR
+│   │   ├── useRisks.ts
+│   │   ├── useAudits.ts
+│   │   ├── useCompliance.ts
+│   │   ├── useDocuments.ts
+│   │   ├── useEmployees.ts
+│   │   ├── useHRTasks.ts
+│   │   ├── useLegalRegisters.ts
+│   │   ├── useOrganizationId.ts
+│   │   ├── useReportTemplates.ts
+│   │   ├── useScheduledReports.ts
+│   │   └── useTasks.ts
+│   │
+│   ├── data/
+│   │   ├── client.ts                        ← typed Supabase client
+│   │   ├── repositories/                    ← low-level DB access layer
+│   │   │   ├── audit.repo.ts / audits.repo.ts
+│   │   │   ├── actions.repo.ts
+│   │   │   ├── evidence.repo.ts
+│   │   │   ├── findings.repo.ts
+│   │   │   ├── uciControls.repo.ts
+│   │   │   └── workPackages.repo.ts
+│   │   └── hooks/                           ← React hooks over repositories
+│   │       ├── useAuditActions.ts
+│   │       ├── useAuditEvidence.ts
+│   │       ├── useAuditFindings.ts
+│   │       └── useWorkPackages.ts
+│   │
+│   ├── services/
+│   │   ├── auditService.ts
+│   │   ├── metricsService.ts
+│   │   ├── notificationService.ts
+│   │   ├── offlineService.ts                ← IndexedDB-backed offline queue (idb)
+│   │   └── unifiedMetricsService.ts
+│   │
+│   ├── contexts/
+│   │   └── AuthContext.tsx                  ← auth + org context provider
 │   │
 │   ├── components/
-│   │   ├── layout/
-│   │   │   └── Layout.tsx                ← Phase 4: cybersecurity sidebar nav
-│   │   ├── controls/
-│   │   │   └── ControlModal.tsx          ← Phase 3c: control status editor
-│   │   ├── assets/
-│   │   │   └── AssetModal.tsx            ← Phase 3c: asset form
-│   │   ├── vulnerabilities/
-│   │   │   ├── VulnerabilityModal.tsx    ← Phase 3c: vuln form
-│   │   │   └── PenTestModal.tsx          ← Phase 3c: pen test form
-│   │   └── incidents/
-│   │       ├── IncidentModal.tsx         ← Phase 3c: incident report form
-│   │       └── BcDrModal.tsx             ← Phase 3c: BC/DR plan form
+│   │   ├── Layout.tsx                       ← 8-module top-bar nav
+│   │   ├── assets/AssetModal.tsx
+│   │   ├── audit/AuditModal.tsx, AuditNavigation.tsx
+│   │   ├── controls/ControlModal.tsx
+│   │   ├── documents/DocumentModal.tsx, DocumentUpload.tsx
+│   │   ├── evidence/EvidenceLink.tsx
+│   │   ├── incidents/IncidentModal.tsx, BcDrModal.tsx
+│   │   ├── risks/RiskModal.tsx
+│   │   ├── suppliers/SupplierModal.tsx
+│   │   ├── tasks/TaskModal.tsx
+│   │   ├── vulnerabilities/VulnerabilityModal.tsx, PenTestModal.tsx
+│   │   └── ui/                              ← shadcn/ui component library
 │   │
-│   └── pages/
-│       ├── Dashboard.tsx                 ← Phase 6: cyber security dashboard
-│       ├── ControlLibrary.tsx            ← Phase 3d: NEW – multi-framework controls
-│       ├── StatementOfApplicability.tsx  ← Phase 5: NEW – ISO 27001 SoA
-│       ├── ComplianceScorecard.tsx       ← Phase 5: NEW – multi-framework scorecard
-│       ├── CyberRiskAssessment.tsx       ← Phase 3e: refactored risk register
-│       ├── AssetInventory.tsx            ← Phase 3d: NEW – asset inventory
-│       ├── VulnerabilityTracker.tsx      ← Phase 3d: NEW – vuln tracker
-│       ├── PenTestTracker.tsx            ← Phase 3d: NEW – pen test tracker
-│       ├── BcDrPlans.tsx                 ← Phase 3d: NEW – BC/DR plans
-│       ├── SecurityIncidents.tsx         ← Phase 3e: refactored incidents
-│       ├── VendorRiskManagement.tsx      ← Phase 3e: refactored vendor risk
-│       └── AuditMaster.tsx               ← Phase 3e: refactored audit (cyber standards)
+│   ├── pages/
+│   │   ├── Dashboard.tsx                    ← executive cybersecurity dashboard
+│   │   ├── ProgrammeDashboard.tsx           ← CSI programme tracker
+│   │   ├── ComplianceScorecard.tsx          ← multi-framework scorecard
+│   │   ├── RegulatoryDashboard.tsx          ← auto-calculates % from control status
+│   │   ├── RiskHeatmapPage.tsx
+│   │   ├── PriorityActionDashboard.tsx
+│   │   ├── ReportPortal.tsx
+│   │   ├── StatementOfApplicability.tsx
+│   │   ├── SecurityObjectives.tsx
+│   │   ├── ControlLibrary.tsx               ← clickable titles → ControlDetail, mapping badges
+│   │   ├── ControlDetail.tsx                ← chain view: control → tests → evidence → findings → risks
+│   │   ├── ControlTesting.tsx
+│   │   ├── UCIControls.tsx / UCIControlsFull.tsx
+│   │   ├── AssetInventory.tsx
+│   │   ├── ApplicationRegister.tsx
+│   │   ├── DataAssetRegister.tsx
+│   │   ├── BusinessProcessRegister.tsx
+│   │   ├── ExceptionRegister.tsx
+│   │   ├── ThreatRegister.tsx
+│   │   ├── CyberRiskAssessment.tsx
+│   │   ├── RiskAssessment.tsx
+│   │   ├── RiskMapping.tsx
+│   │   ├── VulnerabilityTracker.tsx
+│   │   ├── SecurityIncidents.tsx
+│   │   ├── BcDrPlans.tsx
+│   │   ├── VendorRiskManagement.tsx
+│   │   ├── RemediationProgrammes.tsx
+│   │   ├── CSIItems.tsx
+│   │   ├── WorkPackageManagement.tsx
+│   │   ├── EvidenceManagement.tsx
+│   │   ├── EvidenceCollection.tsx
+│   │   ├── EvidenceRequests.tsx
+│   │   ├── ManagementAttestations.tsx
+│   │   ├── WorkflowEngine.tsx
+│   │   ├── IntegrationManager.tsx
+│   │   ├── BulkImport.tsx
+│   │   ├── AuditMaster.tsx / AuditManager.tsx
+│   │   ├── DocumentManagement.tsx
+│   │   ├── LegalRegisters.tsx
+│   │   ├── HumanResources.tsx
+│   │   ├── AdminUsers.tsx / RoleManagement.tsx
+│   │   ├── OrganizationManagement.tsx
+│   │   ├── Settings.tsx
+│   │   └── audit/
+│   │       ├── AuditPortfolio.tsx
+│   │       ├── AuditDetail.tsx
+│   │       ├── AuditCalendar.tsx
+│   │       ├── AuditMetrics.tsx
+│   │       ├── FindingsRegister.tsx         ← linked_control_id + linked_risk_id FK pickers
+│   │       ├── EvidenceLibrary.tsx
+│   │       └── ActionTracker.tsx
+│   │
+│   ├── portals/
+│   │   ├── auditor/AuditorLayout.tsx
+│   │   └── client/ClientLayout.tsx
+│   │
+│   ├── test/
+│   │   ├── setup.ts
+│   │   ├── adminRoute.test.tsx
+│   │   ├── complianceScore.test.ts
+│   │   └── offlineSync.test.ts
+│   │
+│   └── sw.ts                                ← service worker (offline support)
 ```
 
 ---
@@ -71,47 +194,55 @@ cybersecureims/
 
 ### 1. Fork & Rename
 ```bash
-# Fork on GitHub: sidakwa/complyims → sidakwa/cybersecureims
 git clone https://github.com/sidakwa/cybersecureims
 cd cybersecureims
 bash scripts/rename-project.sh
 ```
 
-### 2. Run DB Migrations (in order in Supabase SQL editor)
-```
-1. supabase/migrations/01_schema_migration.sql
-2. supabase/migrations/02_rls_policies.sql
-3. supabase/migrations/03_seed_framework_controls.sql
-   → Replace :org_id with your organization UUID
-```
-
-### 3. Copy new source files
-Copy all files from `src/` into your project's `src/` directory.
-- Overwrite: `App.tsx`, `pages/Dashboard.tsx`, `pages/AuditMaster.tsx`
-- Add all other new pages and hooks
-
-### 4. Update Layout import in your existing Layout usage
-```tsx
-// In App.tsx (already updated in this package)
-import Layout from '@/components/layout/Layout';
-```
-
-### 5. Install Recharts (if not already installed)
+### 2. Environment
 ```bash
-npm install recharts
+cp .env.example .env
+# Fill in VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
 ```
 
-### 6. Deploy
+### 3. Run DB Migrations (in order in Supabase SQL editor)
+```
+01_schema_migration.sql
+02_rls_policies.sql
+03_seed_framework_controls.sql   ← replace :org_id with your org UUID
+04_applications.sql
+05_control_testing_exceptions.sql
+06_threat_register_objectives.sql
+07_tier2_tables.sql
+08_tier3_tables.sql
+09_relationship_layer.sql
+10_platform_admin_flag.sql
+```
+
+### 4. Deploy Edge Function
 ```bash
+supabase functions deploy seed-org-controls
+```
+
+### 5. Install & Build
+```bash
+npm install
 npm run build
 npx vercel --prod
 ```
 
+### 6. Run Tests
+```bash
+npm test
+```
+
 ---
 
-## Key Notes
+## Key Architecture Notes
 
-- **Existing hooks** (`useAudits`, `useRisks`, `useAuth`, `useSuppliers`) are UNCHANGED — only field options inside forms are updated
-- **Multi-tenant RBAC** is fully preserved — `organization_id` RLS works on all new tables
-- **Framework controls** are pre-seeded: 93 ISO 27001, 39 SOC 2, 100+ NIST CSF controls
-- **VendorRiskManagement.tsx** uses the renamed `third_party_vendors` table — connect to your existing `useSuppliers` hook
+- **Multi-tenant RBAC** — all tables are `organization_id`-scoped via RLS; `useOrganizationId` provides the current org in every hook
+- **Relationship layer** (migration 09) — `audit_findings`, `audit_evidence`, `control_test_records`, `evidence_requests`, and `security_exceptions` all carry FK columns to `framework_controls` and `cyber_risks`, enabling the full chain view in `ControlDetail.tsx`
+- **Cross-framework mappings** — `control_framework_mappings` table lets one control map to multiple standards; `RegulatoryDashboard` auto-calculates compliance % from these mappings
+- **Offline support** — `offlineService.ts` queues mutations in IndexedDB (`idb`) and replays on reconnect; covered by `offlineSync.test.ts`
+- **Pre-seeded controls** — 93 ISO 27001, 39 SOC 2, 100+ NIST CSF controls loaded via migration 03 or the `seed-org-controls` edge function on org creation
+- **Existing hooks unchanged** — `useAudits`, `useRisks`, `useAuth`, `useDocuments`, `useEmployees` are stable; only form field options were updated for cybersecurity context

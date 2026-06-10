@@ -1,4 +1,5 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { supabase } from '../lib/supabase';
 
 interface CyberSecureIMSDB extends DBSchema {
   pending_operations: {
@@ -57,14 +58,24 @@ export async function addPendingOperation(
 export async function syncPendingOperations() {
   const database = await getDB();
   const pendingOps = await database.getAll('pending_operations');
-  
+
   for (const op of pendingOps) {
     try {
-      // Sync with Supabase
-      // Implementation depends on your API structure
+      if (op.operation === 'CREATE') {
+        const { error } = await supabase.from(op.table as any).insert(op.data);
+        if (error) throw error;
+      } else if (op.operation === 'UPDATE') {
+        const { error } = await supabase.from(op.table as any).update(op.data).eq('id', op.data.id);
+        if (error) throw error;
+      } else if (op.operation === 'DELETE') {
+        const { error } = await supabase.from(op.table as any).delete().eq('id', op.data.id);
+        if (error) throw error;
+      }
+      // Only remove from queue after confirmed Supabase write
       await database.delete('pending_operations', op.id);
     } catch (error) {
-      console.error('Failed to sync operation:', error);
+      console.error(`Failed to sync ${op.operation} on ${op.table}:`, error);
+      // Leave in queue — will retry on next online event
     }
   }
 }

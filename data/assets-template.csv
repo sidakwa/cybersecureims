@@ -1,0 +1,3 @@
+asset_name,asset_type,asset_tag,criticality,owner,custodian,department,location,environment,data_classification,ip_address,operating_system,vendor,purchase_date,end_of_life_date,notes,status
+Example Web Server,server,SRV-001,high,John Smith,Jane Doe,IT Operations,Cape Town DC,production,confidential,10.0.1.10,Ubuntu 22.04,Dell,2022-01-15,2027-01-15,Primary web server for customer portal,active
+Example Laptop,endpoint,EP-042,medium,Alice Johnson,,HR,Johannesburg,production,internal,,,Lenovo,2023-06-01,,Standard issue employee laptop,active

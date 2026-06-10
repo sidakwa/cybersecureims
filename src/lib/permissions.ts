@@ -1,22 +1,22 @@
 import { supabase } from './supabase';
 
-export async function isDefaultOrgAdmin(): Promise<boolean> {
+export async function isPlatformAdmin(): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
-  
+
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, organization:organization_id(name)')
+    .select('is_platform_admin')
     .eq('id', user.id)
     .single();
-  
-  return profile?.role === 'admin' && profile?.organization?.name === 'Default Organization';
+
+  return profile?.is_platform_admin === true;
 }
 
 export async function canCreateUsers(): Promise<boolean> {
-  return await isDefaultOrgAdmin();
+  return await isPlatformAdmin();
 }
 
 export async function canManageAllOrgs(): Promise<boolean> {
-  return await isDefaultOrgAdmin();
+  return await isPlatformAdmin();
 }

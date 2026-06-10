@@ -65,8 +65,9 @@ export default function ComplianceScorecard() {
         ? (findings.filter(f => f.finding_status === 'Resolved').length / findings.length) * 100 
         : 0;
       
-      const auditCompliance = audits.length > 0 
-        ? (audits.filter(a => a.status === 'Completed').length / audits.length) * 100 
+      const completedAudits = audits.filter(a => a.status === 'Completed' && a.overall_score != null);
+      const auditCompliance = completedAudits.length > 0
+        ? completedAudits.reduce((sum, a) => sum + (a.overall_score || 0), 0) / completedAudits.length
         : 0;
       
       const evidenceCompliance = evidence.length > 0 

@@ -23,6 +23,7 @@ coverage/
 !.vscode/extensions.json
 .idea/
 .DS_Store
+.claude/settings.json
 *.swp
 *.swo
 
@@ -36,6 +37,7 @@ coverage/
 # Supabase
 supabase/.env
 supabase/config.toml
+supabase/.temp/
 
 # Misc
 package.json.backup

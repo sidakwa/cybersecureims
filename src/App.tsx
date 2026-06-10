@@ -98,6 +98,24 @@ function PrivateRoute({
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading, isAdmin } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppRoutes() {
   const { loading } = useAuth();
 
@@ -349,20 +367,20 @@ function AppRoutes() {
         {/* Control Detail Chain View */}
         <Route path="controls/:id" element={<ControlDetail />} />
 
-        {/* Platform Admin */}
+        {/* Platform Admin — requires admin role */}
         <Route
           path="admin/roles"
-          element={<RoleManagement />}
+          element={<AdminRoute><RoleManagement /></AdminRoute>}
         />
 
         <Route
           path="admin/organizations"
-          element={<OrganizationManagement />}
+          element={<AdminRoute><OrganizationManagement /></AdminRoute>}
         />
 
         <Route
           path="bulk-import"
-          element={<BulkImport />}
+          element={<AdminRoute><BulkImport /></AdminRoute>}
         />
 
         <Route

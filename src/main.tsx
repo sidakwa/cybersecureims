@@ -1,5 +1,4 @@
 import './seacom-theme.css';
-import './seacom-theme.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';

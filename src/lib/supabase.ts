@@ -1,17 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ejxrhfqkhrhcqyjhtqpg.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set. Copy .env.example to .env and fill in the values.');
+}
 
 if (import.meta.env.DEV) {
-
   console.log('🔧 Supabase URL:', supabaseUrl);
-
-}
-if (import.meta.env.DEV) {
   console.log('🔧 Environment:', import.meta.env.MODE);
-}
-if (import.meta.env.DEV) {
   console.log('🔧 Anon key present:', !!supabaseAnonKey);
 }
 
@@ -51,7 +49,7 @@ export const testSupabaseConnection = async () => {
 };
 
 // Export the client and helpers
-export const isDemoMode = !supabaseUrl || !supabaseAnonKey;
+export const isDemoMode = false;
 
 export const signInWithAzure = async () => {
   try {
@@ -65,7 +63,7 @@ export const signInWithAzure = async () => {
       options: {
         redirectTo,
         scopes: 'email openid profile User.Read offline_access',
-        queryParams: { tenant: '4c1a7a88-ef89-4360-a322-cc29c20d1966' }
+        queryParams: { tenant: import.meta.env.VITE_AZURE_TENANT_ID }
       }
     });
     

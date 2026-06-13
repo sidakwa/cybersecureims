@@ -202,6 +202,235 @@ export interface CyberRisk {
   risk_owner?: string;
   assigned_to?: string;
   review_date?: string;
+  source_assessment_type?: AssessmentType;
+  source_assessment_id?: string;
   created_at: string;
   updated_at: string;
 }
+
+// ============================================================
+// ASSESSMENT SECTION — STRAT-PORTAL-005 v1.2
+// ============================================================
+
+export type AssessmentType = 'audit' | 'pen_test' | 'vuln_scan' | 'risk_assessment' | 'tprm_questionnaire';
+export type AssessmentStatusCode = 'planned' | 'scheduled' | 'in_progress' | 'reporting' | 'closed' | 'cancelled';
+export type FindingStatusCode = 'open' | 'in_remediation' | 'remediated' | 'risk_accepted' | 'false_positive' | 'closed_not_remediated';
+export type TprmDirection = 'inbound' | 'outbound';
+
+export interface LookupRow {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface AssessmentCommon {
+  id: string;
+  organization_id: string;
+  name: string;
+  scope_description: string;
+  status_id: string;
+  source_id?: string;
+  lead_assessor_role?: string;
+  lead_assessor_name?: string;
+  scheduled_start: string;
+  scheduled_end: string;
+  actual_start?: string;
+  actual_end?: string;
+  closed_on?: string;
+  created_at: string;
+  updated_at: string;
+  status_code?: AssessmentStatusCode;
+  status_name?: string;
+  source_code?: string;
+  source_name?: string;
+}
+
+export interface AssessmentView extends AssessmentCommon {
+  assessment_type: AssessmentType;
+}
+
+export interface AssessmentCalendarEntry extends AssessmentView {
+  start_date: string;
+  end_date: string;
+}
+
+export interface AuditEngagement extends AssessmentCommon {
+  title?: string;
+  audit_ref?: string;
+  audit_type?: string;
+  standard?: string;
+  scope?: string;
+  status?: string;
+  overall_score?: number;
+  assessor?: string;
+  start_date?: string;
+  end_date?: string;
+  report_link?: string;
+  auditor_firm?: string;
+  engagement_letter_ref?: string;
+  final_report_ref?: string;
+  frameworks?: LookupRow[];
+}
+
+export interface PenTestEngagement extends AssessmentCommon {
+  test_name?: string;
+  scope?: string;
+  vendor?: string;
+  methodology?: string;
+  start_date?: string;
+  end_date?: string;
+  critical_findings?: number;
+  high_findings?: number;
+  medium_findings?: number;
+  low_findings?: number;
+  informational_findings?: number;
+  total_findings?: number;
+  executive_summary?: string;
+  test_type_id?: string;
+  test_type_name?: string;
+  target_assets?: string[];
+  target_url_or_ip?: string;
+  rules_of_engagement_ref?: string;
+  final_report_ref?: string;
+}
+
+export interface VulnScan extends AssessmentCommon {
+  scanner_id?: string;
+  scanner_name?: string;
+  target_assets?: string[];
+  target_scope_text?: string;
+  scan_run_ref?: string;
+  total_findings?: number;
+  critical_count?: number;
+  high_count?: number;
+  medium_count?: number;
+  low_count?: number;
+  imported_at?: string;
+}
+
+export interface RiskAssessmentEngagement extends AssessmentCommon {
+  assessment_type_id?: string;
+  assessment_type_name?: string;
+  methodology_id?: string;
+  methodology_name?: string;
+  scope_assets?: string[];
+  scope_business_processes?: string[];
+  facilitator_role?: string;
+  participants?: string[];
+  workshop_dates?: string[];
+  report_ref?: string;
+}
+
+export interface TprmQuestionnaire extends AssessmentCommon {
+  direction: TprmDirection;
+  vendor_id?: string;
+  vendor_name?: string;
+  customer_name?: string;
+  questionnaire_template_id?: string;
+  template_name?: string;
+  responses_received_on?: string;
+  resulting_risk_rating_id?: string;
+  risk_rating_name?: string;
+  report_ref?: string;
+}
+
+export interface AssessmentStatusHistory {
+  id: string;
+  assessment_type: AssessmentType;
+  assessment_id: string;
+  from_status_id?: string;
+  from_status_name?: string;
+  to_status_id: string;
+  to_status_name?: string;
+  changed_by?: string;
+  changed_on: string;
+  reason?: string;
+}
+
+export interface AssessmentFindingSummary {
+  id: string;
+  title: string;
+  severity: string;
+  status: string;
+  created_at: string;
+}
+
+export interface AssessmentRemediationSummary {
+  total_work_packages: number;
+  completed_work_packages: number;
+  total_csi_items: number;
+  completion_pct: number;
+}
+
+// ============================================================
+// INVENTORY TYPES — STRAT-PORTAL-008 v1.1
+// ============================================================
+
+export type LifecyclePhaseCode = 'proposed' | 'active' | 'deprecated' | 'retired' | 'unknown';
+export type ObligationTypeCode  = 'regulatory' | 'contractual_customer' | 'contractual_vendor' | 'insurance' | 'internal_policy' | 'industry_standard';
+export type AssuranceFrequency  = 'continuous' | 'annual' | 'on_request';
+export type InventoryItemType   = 'asset' | 'application' | 'data_asset' | 'business_process' | 'vendor' | 'policy' | 'obligation';
+
+export interface InventoryLookupRow {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface InventoryCommon {
+  id: string;
+  organization_id: string;
+  name: string;
+  short_code?: string;
+  description?: string;
+  owner_role_id?: string;
+  lifecycle_phase_id?: string;
+  lifecycle_phase_code?: LifecyclePhaseCode;
+  lifecycle_phase_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ComplianceObligation extends InventoryCommon {
+  obligation_code: string;
+  type_id: string;
+  type_name?: string;
+  type_code?: string;
+  source_id: string;
+  source_name?: string;
+  source_code?: string;
+  source_reference: string;
+  obligation_text: string;
+  evidence_required: string;
+  assurance_frequency?: AssuranceFrequency;
+  responsible_role?: string;
+}
+
+export interface InventoryControlLink {
+  id: string;
+  item_type: InventoryItemType;
+  item_id: string;
+  control_id: string;
+  control_title?: string;
+  applicability_note?: string;
+}
+
+export interface InventoryObligationLink {
+  id: string;
+  item_type: InventoryItemType;
+  item_id: string;
+  obligation_id: string;
+  obligation_name?: string;
+  obligation_code?: string;
+  applicability_note?: string;
+}
+
+export interface ApplicationAssetLink   { id: string; application_id: string; asset_id: string; asset_name?: string; }
+export interface VendorApplicationLink  { id: string; vendor_id: string; application_id: string; application_name?: string; }
+export interface ProcessDataAssetLink   { id: string; process_id: string; data_asset_id: string; data_asset_name?: string; relationship?: string; }

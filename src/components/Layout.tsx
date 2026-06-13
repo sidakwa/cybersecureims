@@ -119,40 +119,40 @@ export default function Layout() {
     { name: 'Security Objectives', path: '/security-objectives', icon: Target },
   ];
 
-  // 3. INVENTORY
+  // 3. INVENTORY — STRAT-PORTAL-008 v1.1 (10 tabs, no Exception Register)
   const inventoryNav = [
-    { name: 'UCI Controls', path: '/uci-controls', icon: BarChart },
-    { name: 'Control Library', path: '/controls', icon: Shield },
-    { name: 'Asset Inventory', path: '/assets', icon: HardDrive },
-    { name: 'Application Register', path: '/applications', icon: Monitor },
-    { name: 'Data Asset Register', path: '/data-assets', icon: Database },
-    { name: 'Business Process Register', path: '/business-processes', icon: Network },
-    { name: 'Exception Register', path: '/exceptions', icon: ShieldAlert },
-    { name: 'Policy Library', path: '/documents', icon: FileText },
-    { name: 'Vendor Register', path: '/vendors', icon: Truck },
-    { name: 'Compliance Obligations', path: '/legal', icon: BookOpen },
-    { name: 'Security Training', path: '/hr', icon: Users },
+    { name: 'UCI Controls',            path: '/uci-controls',              icon: BarChart },
+    { name: 'Control Library',         path: '/controls',                  icon: Shield },
+    { name: 'Asset Inventory',         path: '/assets',                    icon: HardDrive },
+    { name: 'Application Register',    path: '/applications',              icon: Monitor },
+    { name: 'Data Asset Register',     path: '/data-assets',               icon: Database },
+    { name: 'Business Process Register', path: '/business-processes',      icon: Network },
+    { name: 'Policy Library',          path: '/documents',                 icon: FileText },
+    { name: 'Vendor Register',         path: '/vendors',                   icon: Truck },
+    { name: 'Compliance Obligations',  path: '/inventory/obligations',     icon: BookOpen },
+    { name: 'Security Training',       path: '/inventory/training',        icon: Users },
   ];
 
-  // 4. ASSESSMENT
+  // 4. ASSESSMENT — routes per STRAT-PORTAL-005 §5.5 nav order
   const assessmentNav = [
-    { name: 'Audit Portfolio', path: '/audits/portfolio', icon: ClipboardList },
-    { name: 'Control Testing', path: '/control-testing', icon: ClipboardCheck },
-    { name: 'Pen Tests', path: '/pen-tests', icon: Search },
-    { name: 'Vulnerability Scans', path: '/vulnerabilities', icon: Bug },
-    { name: 'Risk Assessments', path: '/risk-assessment', icon: AlertTriangle },
-    { name: 'TPRM Questionnaires', path: '/tprm', icon: ClipboardCheck },
-    { name: 'Audit Calendar', path: '/audits/calendar', icon: Calendar },
+    { name: 'Audit Portfolio',      path: '/assessment/audits',             icon: ClipboardList },
+    { name: 'Pen Tests',            path: '/assessment/pen-tests',          icon: Search },
+    { name: 'Vulnerability Scans',  path: '/assessment/vuln-scans',         icon: Bug },
+    { name: 'Risk Assessments',     path: '/assessment/risk-assessments',   icon: AlertTriangle },
+    { name: 'TPRM Questionnaires',  path: '/assessment/tprm',               icon: ClipboardCheck },
+    { name: 'Assessment Calendar',  path: '/assessment/calendar',           icon: Calendar },
+    { name: 'Control Testing',      path: '/control-testing',               icon: ClipboardCheck },
   ];
 
-  // 5. FINDINGS & RISKS
+  // 5. FINDINGS & RISKS (Exception Register moved here from Inventory per STRAT-PORTAL-008)
   const findingsNav = [
-    { name: 'Findings Register', path: '/audits/findings', icon: AlertTriangle },
-    { name: 'Cyber Risk Register', path: '/risk-assessment', icon: TrendingUp },
-    { name: 'Threat Register', path: '/threat-register', icon: Skull },
-    { name: 'Risk Mapping', path: '/risk-mapping', icon: GitBranch },
-    { name: 'Vulnerability Tracker', path: '/vulnerability-tracker', icon: Bug },
-    { name: 'Incident Register', path: '/incidents', icon: Zap },
+    { name: 'Findings Register',    path: '/audits/findings',     icon: AlertTriangle },
+    { name: 'Cyber Risk Register',  path: '/risk-assessment',     icon: TrendingUp },
+    { name: 'Threat Register',      path: '/threat-register',     icon: Skull },
+    { name: 'Risk Mapping',         path: '/risk-mapping',        icon: GitBranch },
+    { name: 'Vulnerability Tracker',path: '/vulnerability-tracker',icon: Bug },
+    { name: 'Exception Register',   path: '/exceptions',          icon: ShieldAlert },
+    { name: 'Incident Register',    path: '/incidents',           icon: Zap },
   ];
 
   // 6. REMEDIATION

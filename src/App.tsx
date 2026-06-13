@@ -72,6 +72,18 @@ import RegulatoryDashboard from './pages/RegulatoryDashboard';
 import WorkflowEngine from './pages/WorkflowEngine';
 import ControlDetail from './pages/ControlDetail';
 
+// Inventory Section — STRAT-PORTAL-008
+import ComplianceObligationsPage from './pages/inventory/ComplianceObligationsPage';
+import SecurityTrainingPage from './pages/inventory/SecurityTrainingPage';
+
+// Assessment Section — STRAT-PORTAL-005
+import AuditPortfolioPage from './pages/assessment/AuditPortfolioPage';
+import PenTestsPage from './pages/assessment/PenTestsPage';
+import VulnScansPage from './pages/assessment/VulnScansPage';
+import RiskAssessmentsPage from './pages/assessment/RiskAssessmentsPage';
+import TprmPage from './pages/assessment/TprmPage';
+import AssessmentCalendarPage from './pages/assessment/AssessmentCalendarPage';
+
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -366,6 +378,36 @@ function AppRoutes() {
 
         {/* Control Detail Chain View */}
         <Route path="controls/:id" element={<ControlDetail />} />
+
+        {/* Inventory Section — STRAT-PORTAL-008 */}
+        <Route path="inventory" element={<Navigate to="/inventory/obligations" replace />} />
+        <Route path="inventory/obligations" element={<ComplianceObligationsPage />} />
+        <Route path="inventory/training"    element={<SecurityTrainingPage />} />
+        {/* Backward-compat: old Inventory paths that changed */}
+        <Route path="legal" element={<Navigate to="/inventory/obligations" replace />} />
+        <Route path="hr"    element={<Navigate to="/inventory/training"    replace />} />
+
+        {/* Assessment Section — STRAT-PORTAL-005 (§7.3 route structure) */}
+        <Route path="assessment" element={<Navigate to="/assessment/audits" replace />} />
+        <Route path="assessment/audits"            element={<AuditPortfolioPage />} />
+        <Route path="assessment/audits/:id"        element={<AuditPortfolioPage />} />
+        <Route path="assessment/pen-tests"         element={<PenTestsPage />} />
+        <Route path="assessment/pen-tests/:id"     element={<PenTestsPage />} />
+        <Route path="assessment/vuln-scans"        element={<VulnScansPage />} />
+        <Route path="assessment/vuln-scans/:id"    element={<VulnScansPage />} />
+        <Route path="assessment/risk-assessments"  element={<RiskAssessmentsPage />} />
+        <Route path="assessment/risk-assessments/:id" element={<RiskAssessmentsPage />} />
+        <Route path="assessment/tprm"              element={<TprmPage />} />
+        <Route path="assessment/tprm/:id"          element={<TprmPage />} />
+        <Route path="assessment/calendar"          element={<AssessmentCalendarPage />} />
+
+        {/* Backward-compat redirects — keep old bookmarks working (§7.3) */}
+        <Route path="audits/portfolio"  element={<Navigate to="/assessment/audits" replace />} />
+        <Route path="audits/calendar"   element={<Navigate to="/assessment/calendar" replace />} />
+        <Route path="pen-tests"         element={<Navigate to="/assessment/pen-tests" replace />} />
+        <Route path="vulnerabilities"   element={<Navigate to="/assessment/vuln-scans" replace />} />
+        <Route path="vulnerability-tracker" element={<Navigate to="/assessment/vuln-scans" replace />} />
+        <Route path="tprm"              element={<Navigate to="/assessment/tprm" replace />} />
 
         {/* Platform Admin — requires admin role */}
         <Route
